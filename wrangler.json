@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "sandbox",
+  "main": "index.ts",
+  "compatibility_date": "2024-09-03",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "dist"
+  },
+  "observability": {
+    "enabled": true
+  }
+}
