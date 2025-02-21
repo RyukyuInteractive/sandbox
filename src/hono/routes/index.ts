@@ -18,7 +18,7 @@ export const POST = factory.createHandlers(
   async (c) => {
     const json = c.req.valid("json")
 
-    const apiKey = json.apiKey ?? process.env.OPENAI_API_KEY ?? null
+    const apiKey = json.apiKey ?? import.meta.env.VITE_OPENAI_API_KEY ?? null
 
     const storage = new MessageStorage()
 
