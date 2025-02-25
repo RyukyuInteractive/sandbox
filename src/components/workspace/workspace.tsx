@@ -49,14 +49,15 @@ export function Workspace(props: Props) {
   const chat = useChat({
     async fetch(_, init) {
       if (typeof init?.body !== "string") throw new Error("init is undefined")
-      return client.index.$post({
-        json: {
-          ...JSON.parse(init.body),
-          apiKey: credentialStorage.readApiKey(),
-          template: "",
-          files: stateRef.current.files,
-        },
-      })
+      return client.index.$post({ json: JSON.parse(init.body) })
+    },
+    experimental_prepareRequestBody(options) {
+      return {
+        ...options,
+        apiKey: credentialStorage.readApiKey(),
+        template: "",
+        files: stateRef.current.files,
+      }
     },
     async onFinish(message) {
       const code = toMessageCode(message)
