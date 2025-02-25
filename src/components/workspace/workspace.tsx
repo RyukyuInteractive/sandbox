@@ -65,10 +65,11 @@ export function Workspace(props: Props) {
       if (part.type !== "text") return
       const result = zPartCode.parse(JSON.parse(part.text))
       if (result.type === "code") {
+        stateRef.current.currentFilePath = "src/app.tsx"
         stateRef.current.files["src/app.tsx"] = result.code
-        await webContainer.fs.writeFile("src/app.tsx", result.code)
         const newModel = monaco.editor.createModel(result.code, "tsx")
         editorRef.current?.setModel(newModel)
+        await webContainer.fs.writeFile("src/app.tsx", result.code)
       }
       removeComponent("EDITOR")
       removeComponent("TERMINAL")
@@ -173,9 +174,7 @@ export function Workspace(props: Props) {
       })
       .filter((n) => n !== null)
     if (code === null) return
-    stateRef.current.files["src/app.tsx"] = code
-    const newModel = monaco.editor.createModel(code, "tsx")
-    editorRef.current.setModel(newModel)
+    editorRef.current.setValue(code)
   }, [chat])
 
   /**
@@ -208,8 +207,6 @@ export function Workspace(props: Props) {
     addComponent("TERMINAL")
     return chat.handleSubmit(event)
   }
-
-  console.log(chat.messages)
 
   const annotation = getCurrentAnnotation(chat.messages)
 

@@ -25,7 +25,7 @@ export function AssistantMessage(props: Props) {
     if (block.type === "message") {
       return (
         <Card className="py-2 pr-4 pl-2">
-          <div>{block.message_to_user}</div>
+          <div>{block.message_to_user ?? "考え中.."}</div>
         </Card>
       )
     }
@@ -33,7 +33,7 @@ export function AssistantMessage(props: Props) {
     if (block.type === "code") {
       return (
         <Card className="py-2 pr-4 pl-2">
-          <div>{block.message_to_user}</div>
+          <div>{block.message_to_user ?? "コードを生成中.."}</div>
         </Card>
       )
     }

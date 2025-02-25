@@ -9,9 +9,17 @@ export function toAnnotationMessage(annotation: Props) {
     return "文脈を考えてます.."
   }
 
-  if (annotation === "in-progress") {
-    return "考え中.."
+  if (annotation === "context-in-tasks") {
+    return "ファイルを選んでいます.."
   }
 
-  return null
+  if (annotation === "context-in-deps") {
+    return "必要なコンポーネントを選んでいます.."
+  }
+
+  if (annotation === "context-in-code") {
+    return "コードを生成しています.."
+  }
+
+  return "考え中.."
 }
