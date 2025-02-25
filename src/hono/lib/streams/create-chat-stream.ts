@@ -6,13 +6,13 @@ import { zPartMessage } from "~/lib/parts/part-message"
 const prompt = "あなたは開発者です。ユーザの技術的な質問に答えなさい。"
 
 type Props = {
-  model: OpenAIProvider
+  provider: OpenAIProvider
   messages: CoreMessage[]
 }
 
 export async function createChatStream(props: Props) {
   return streamText({
-    model: props.model.languageModel("gpt-4o", {
+    model: props.provider.languageModel("gpt-4o", {
       structuredOutputs: true,
     }),
     maxTokens: 2048,

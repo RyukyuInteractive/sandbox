@@ -31,7 +31,7 @@ export async function writeChatStream(stream: DataStreamWriter, props: Props) {
 
   if (context.object.context === "chat_only") {
     const contextStream = await createChatStream({
-      model: provider,
+      provider: provider,
       messages: props.messages,
     })
 
