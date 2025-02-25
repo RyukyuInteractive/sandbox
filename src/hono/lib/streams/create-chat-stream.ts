@@ -1,26 +1,26 @@
 import type { OpenAIProvider } from "@ai-sdk/openai"
-import { streamObject } from "ai"
+import { type CoreMessage, Output, streamText } from "ai"
 import { chatPrompt } from "~/hono/lib/prompts/chat-prompt"
-import { zAssistantObjectChat } from "~/lib/validations/assistant-object-chat"
+import { zPartMessage } from "~/lib/parts/part-message"
 
 const prompt = "あなたは開発者です。ユーザの技術的な質問に答えなさい。"
 
-const zSchema = zAssistantObjectChat
-
 type Props = {
   model: OpenAIProvider
-  message: string
+  messages: CoreMessage[]
 }
 
 export async function createChatStream(props: Props) {
-  return streamObject({
-    model: props.model.languageModel("gpt-4o-mini"),
-    schema: zSchema,
+  return streamText({
+    model: props.model.languageModel("gpt-4o", {
+      structuredOutputs: true,
+    }),
     maxTokens: 2048,
+    experimental_output: Output.object({ schema: zPartMessage }),
     messages: [
       { role: "system", content: prompt },
       { role: "system", content: chatPrompt },
-      { role: "user", content: props.message },
+      ...props.messages,
     ],
   })
 }

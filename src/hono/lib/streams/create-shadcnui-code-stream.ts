@@ -1,10 +1,14 @@
 import type { OpenAIProvider } from "@ai-sdk/openai"
-import { streamObject } from "ai"
+import { type CoreMessage, Output, streamText } from "ai"
 import { shadcnuiFiles } from "~/hono/lib/files/shadcnui-files"
 import { codeRulePrompt } from "~/hono/lib/prompts/code-rule-prompt"
-import { zAssistantObjectShadcnuiCode } from "~/lib/validations/assistant-object-shadcnui-code"
+import { zPartCode } from "~/lib/parts/part-code"
 
 const prompt = `あなたはプログラマーです。ファイル「src/app.tsx」を修正しなさい。
+
+- type: "code
+- code: 修正したコード
+- message_to_user: ユーザへのメッセージ
 
 ## 画像
 
@@ -23,11 +27,9 @@ const prompt = `あなたはプログラマーです。ファイル「src/app.ts
 const chatPrompt = `# 会話
 - 丁寧語を使用しない`
 
-const zSchema = zAssistantObjectShadcnuiCode
-
 type Props = {
-  model: OpenAIProvider
-  message: string
+  provider: OpenAIProvider
+  messages: CoreMessage[]
   code: string
   targetFiles: string[]
   tasks: string[]
@@ -47,10 +49,12 @@ export async function createShadcnuiCodeStream(props: Props) {
 
   const tasksText = props.tasks.map((task) => `- ${task}`).join("\n")
 
-  return streamObject({
-    model: props.model.languageModel("gpt-4o"),
-    schema: zSchema,
+  return streamText({
+    model: props.provider.languageModel("gpt-4o", {
+      structuredOutputs: true,
+    }),
     maxTokens: 2048,
+    experimental_output: Output.object({ schema: zPartCode }),
     messages: [
       { role: "system", content: prompt },
       { role: "system", content: JSON.stringify(files) },
@@ -60,10 +64,7 @@ export async function createShadcnuiCodeStream(props: Props) {
         role: "system",
         content: `# 要件\n${tasksText}`,
       },
-      {
-        role: "system",
-        content: `要望「${props.message}」を満たすようにファイル「src/app.tsx」を修正しなさい。`,
-      },
+      ...props.messages,
     ],
   })
 }

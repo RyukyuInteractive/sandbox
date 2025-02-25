@@ -1,22 +1,26 @@
-import { experimental_useObject as useObject } from "@ai-sdk/react"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useChat } from "@ai-sdk/react"
+import { type DeepPartial, parsePartialJson } from "@ai-sdk/ui-utils"
 import { Terminal } from "@xterm/xterm"
 import type { editor } from "monaco-editor-core"
 import * as monaco from "monaco-editor-core"
 import { useEffect, useRef, useState } from "react"
+import type { z } from "zod"
 import { Button } from "~/components/ui/button"
 import { Card } from "~/components/ui/card"
 import { Input } from "~/components/ui/input"
 import { Separator } from "~/components/ui/separator"
-import { ChatMessageItem } from "~/components/workspace/chat-message-item"
+import { ChatMessage } from "~/components/workspace/chat-message"
 import { MonacoEditor } from "~/components/workspace/monaco-editor"
 import { useCredentialStorage } from "~/hooks/use-credential-storage"
 import { useWebContainer } from "~/hooks/use-web-container"
 import { client } from "~/lib/client"
+import { getCurrentAnnotation } from "~/lib/get-current-annotation"
+import type { zPart } from "~/lib/parts/part"
+import { zPartCode } from "~/lib/parts/part-code"
 import { mainTemplate } from "~/lib/templates/main"
+import { toAnnotationMessage } from "~/lib/to-annotation-message"
 import { toFileSystemTree } from "~/lib/to-file-system-tree"
 import { cn } from "~/lib/utils"
-import { zAssistantStream } from "~/lib/validations/assistant-stream"
 
 type Props = {
   projectId: string
@@ -43,52 +47,37 @@ export function Workspace(props: Props) {
 
   const terminalRef = useRef<HTMLDivElement>(null)
 
-  const [input, setInput] = useState("")
-
-  const query = useQuery({
-    queryKey: [client.messages.$url()],
-    async queryFn() {
-      const resp = await client.messages.$get()
-      return resp.json()
-    },
-  })
-
-  const mutation = useMutation({
-    async mutationFn() {
-      const resp = await client.messages.$post({
-        json: { text: input },
-      })
-      return resp.json()
-    },
-  })
-
-  const objectStream = useObject({
-    api: "",
-    schema: zAssistantStream,
-    fetch(_, init) {
+  const chat = useChat({
+    async fetch(_, init) {
+      if (typeof init?.body !== "string") throw new Error("init is undefined")
       return client.index.$post({
         json: {
+          ...JSON.parse(init.body),
+          apiKey: credentialStorage.readApiKey(),
+          template: "",
           files: stateRef.current.files,
-          template: "SHADCN_UI",
-          apiKey: credentialStorage.readLocalApiKey(),
         },
       })
     },
-    async onFinish(event) {
-      if (!stateRef.current.isLocked) return
-      stateRef.current.isLocked = false
-      for (const node of event.object ?? []) {
-        if (node.type === "code") {
-          stateRef.current.files["src/app.tsx"] = node.content.code
-          await webContainer.fs.writeFile("src/app.tsx", node.content.code)
-          const newModel = monaco.editor.createModel(node.content.code, "tsx")
-          editorRef.current?.setModel(newModel)
-        }
+    async onFinish(message) {
+      if (message.parts === undefined) return
+      const [part] = message.parts
+      if (part.type !== "text") return
+      const result = zPartCode.parse(JSON.parse(part.text))
+      if (result.type === "code") {
+        stateRef.current.files["src/app.tsx"] = result.code
+        await webContainer.fs.writeFile("src/app.tsx", result.code)
+        const newModel = monaco.editor.createModel(result.code, "tsx")
+        editorRef.current?.setModel(newModel)
       }
-      query.refetch()
+      removeComponent("EDITOR")
+      removeComponent("TERMINAL")
+      stateRef.current.isLocked = false
     },
     onError(error) {
       console.error("Error in chat stream:", error)
+      removeComponent("EDITOR")
+      removeComponent("TERMINAL")
       stateRef.current.isLocked = false
     },
   })
@@ -165,6 +154,30 @@ export function Workspace(props: Props) {
     setCurrentFilePath(path)
   }
 
+  useEffect(() => {
+    if (editorRef.current === null) return
+    if (chat.status !== "streaming") return
+    const [code = null] = chat.messages
+      .map((message) => {
+        if (message.role !== "assistant") return null
+        if (message.parts === undefined) return null
+        if (message.parts.length === 0) return null
+        const [part] = message.parts
+        if (part.type !== "text") return null
+        const json = parsePartialJson(part.text)
+        if (json.value === undefined) return null
+        const block = json.value as DeepPartial<z.infer<typeof zPart>>
+        if (block.type !== "code") return null
+        if (block.code === undefined) return null
+        return block.code
+      })
+      .filter((n) => n !== null)
+    if (code === null) return
+    stateRef.current.files["src/app.tsx"] = code
+    const newModel = monaco.editor.createModel(code, "tsx")
+    editorRef.current.setModel(newModel)
+  }, [chat])
+
   /**
    * UIの表示を切り替える
    */
@@ -176,51 +189,53 @@ export function Workspace(props: Props) {
     })
   }
 
-  /**
-   * メッセージを送信する
-   */
-  const onSubmit = async () => {
-    if (stateRef.current.isLocked) return
-    stateRef.current.isLocked = true
-    await mutation.mutateAsync()
-    await query.refetch()
-    objectStream.submit({})
-    setInput("")
+  const addComponent = (component: string) => {
+    setComponents((v) => {
+      return v.includes(component) ? v : [...v, component]
+    })
   }
 
-  const streamMessages = objectStream.isLoading
-    ? objectStream.object?.filter((node) => {
-        return node !== undefined
-      })
-    : []
+  const removeComponent = (component: string) => {
+    setComponents((v) => {
+      return v.includes(component) ? v.filter((c) => c !== component) : v
+    })
+  }
 
-  const messages = [
-    ...(query.data ?? []),
-    ...(streamMessages ?? []),
-  ].toReversed()
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    stateRef.current.isLocked = true
+    onChangeFilePath("src/app.tsx")
+    addComponent("EDITOR")
+    addComponent("TERMINAL")
+    return chat.handleSubmit(event)
+  }
+
+  console.log(chat.messages)
+
+  const annotation = getCurrentAnnotation(chat.messages)
 
   return (
     <div className="flex h-svh w-full">
       <aside className="h-full w-80 min-w-80 py-2 pl-2">
         <Card className="h-full w-full">
           <div className="flex h-full flex-col overflow-hidden">
-            <div className="flex gap-x-2 p-2">
+            <form className="flex gap-x-2 p-2" onSubmit={onSubmit}>
               <Input
-                value={input}
+                value={chat.input}
                 placeholder="なにをしたいですか？"
-                onChange={(event) => {
-                  setInput(event.target.value)
-                }}
+                onChange={chat.handleInputChange}
               />
-              <Button variant={"outline"} onClick={onSubmit}>
-                {"送信"}
-              </Button>
-            </div>
+              <Button variant={"outline"}>{"送信"}</Button>
+            </form>
             <Separator />
             <ul className="space-y-2 overflow-y-scroll p-2">
-              {messages?.map((node, index) => (
-                <li key={index.toFixed()}>
-                  <ChatMessageItem node={node} />
+              {chat.status !== "ready" && (
+                <li>
+                  <p className="text-xs">{toAnnotationMessage(annotation)}</p>
+                </li>
+              )}
+              {chat.messages?.toReversed().map((message) => (
+                <li key={message.id}>
+                  <ChatMessage key={message.id} message={message} />
                 </li>
               ))}
             </ul>

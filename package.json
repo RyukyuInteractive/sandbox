@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.1.14",
+    "@ai-sdk/provider": "^1.0.9",
     "@ai-sdk/react": "^1.1.18",
     "@hono/zod-validator": "^0.4.3",
     "@radix-ui/react-avatar": "^1.1.2",
@@ -27,7 +28,7 @@
     "@tanstack/react-router": "^1.99.8",
     "@webcontainer/api": "^1.5.1-internal.9",
     "@xterm/xterm": "^5.5.0",
-    "ai": "^4.1.38",
+    "ai": "^4.1.46",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "hono": "^4.7.1",

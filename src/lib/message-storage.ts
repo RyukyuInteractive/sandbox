@@ -1,9 +1,9 @@
-import type { ChatMessage } from "~/types/chat-message"
+import type { UIMessage } from "ai"
 
-const messages: ChatMessage[] = []
+const messages: UIMessage[] = []
 
 export class MessageStorage {
-  push(message: ChatMessage) {
+  push(message: UIMessage) {
     messages.push(message)
   }
 

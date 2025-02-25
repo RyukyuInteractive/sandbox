@@ -1,7 +1,7 @@
 import type { OpenAIProvider } from "@ai-sdk/openai"
-import { streamObject } from "ai"
+import { type CoreMessage, generateObject } from "ai"
+import { z } from "zod"
 import { chatPrompt } from "~/hono/lib/prompts/chat-prompt"
-import { zAssistantObjectShadcnuiDeps } from "~/lib/validations/assistant-object-shadcnui-deps"
 
 const allFiles = [
   {
@@ -256,24 +256,24 @@ const filesText = files.map((file) => `- ${file.name}`).join("\n")
 
 const prompt = `# ルール
 
-あなたはReactを用いてコードを生成します。必要に応じて以下のコンポーネントが使用できます。
+ユーザの要望に必要なコンポーネントがあれば以下から応答しなさい。
 
 ${filesText}`
 
-const zSchema = zAssistantObjectShadcnuiDeps
-
 type Props = {
-  model: OpenAIProvider
-  message: string
+  provider: OpenAIProvider
+  messages: CoreMessage[]
   tasks: string[]
 }
 
 export async function createShadcnuiDepsStream(props: Props) {
   const tasksText = props.tasks.map((task) => `- ${task}`).join("\n")
 
-  return streamObject({
-    model: props.model.languageModel("gpt-4o-mini"),
-    schema: zSchema,
+  return generateObject({
+    model: props.provider.languageModel("gpt-4o-mini"),
+    schema: z.object({
+      components: z.array(z.string()),
+    }),
     maxTokens: 2048,
     messages: [
       {
@@ -282,10 +282,7 @@ export async function createShadcnuiDepsStream(props: Props) {
       },
       { role: "system", content: prompt },
       { role: "system", content: chatPrompt },
-      {
-        role: "system",
-        content: `要望「${props.message}」を満たすコンポーネント名の配列を応答しなさい。`,
-      },
+      ...props.messages,
     ],
   })
 }
