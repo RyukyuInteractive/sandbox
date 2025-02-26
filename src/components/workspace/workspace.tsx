@@ -62,11 +62,11 @@ export function Workspace(props: Props) {
     async onFinish(message) {
       const code = toMessageCode(message)
       if (code === null) return null
+      await webContainer.fs.writeFile("src/app.tsx", code)
       stateRef.current.currentFilePath = "src/app.tsx"
       stateRef.current.files["src/app.tsx"] = code
       const newModel = monaco.editor.createModel(code, "tsx")
       editorRef.current?.setModel(newModel)
-      await webContainer.fs.writeFile("src/app.tsx", code)
       view.remove("EDITOR")
       view.remove("TERMINAL")
       stateRef.current.isLocked = false

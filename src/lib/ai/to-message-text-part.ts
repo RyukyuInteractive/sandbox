@@ -7,9 +7,11 @@ export function toMessageTextPart(message: UIMessage | Message) {
 
   if (message.parts.length === 0) return null
 
-  const [part] = message.parts
+  for (const part of message.parts) {
+    if (part.type !== "text") continue
+    if (part.text === "") continue
+    return part
+  }
 
-  if (part.type !== "text") return null
-
-  return part
+  return null
 }

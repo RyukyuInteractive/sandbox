@@ -1,53 +1,69 @@
 import type { OpenAIProvider } from "@ai-sdk/openai"
-import { type CoreMessage, Output, streamText } from "ai"
-import { shadcnuiFiles } from "~/hono/lib/files/shadcnui-files"
+import { type CoreMessage, Output, streamText, tool } from "ai"
+import { z } from "zod"
+import { chatPrompt } from "~/hono/lib/prompts/chat-prompt"
 import { codeRulePrompt } from "~/hono/lib/prompts/code-rule-prompt"
 import { zPartCode } from "~/lib/parts/part-code"
 
-const prompt = `あなたはプログラマーです。ファイル「src/app.tsx」を修正しなさい。
+const prompt = `あなたは熟練したフロントエンドエンジニアです。ファイル「src/app.tsx」を指示に従って効率的に修正してください。
 
-- type: "code
-- code: 修正したコード
-- message_to_user: ユーザへのメッセージ
+レスポンスフォーマット:
+- type: "code"
+- code: 修正後の最適化されたコード
+- message_to_user: 変更点の簡潔な説明
 
-## 画像
+## リソース
 
-画像は以下のURLを使用する。変数「image」には1から100の間の数字が入る。
+### 画像
 
 - https://picsum.photos/id/{image}/{width}/{height}
+- image: 1-100の整数
+- width/height: 画像サイズ（ピクセル）
 
-## ルール
+## デザイン要件
 
-- ダークモードなので白色を使用しない。
-- 絶対に背景色を変えない。（bg-を使用しない）
-- TailwindCSSを用いてレイアウトを作成する
+1. ダークモードに最適化:
+- 白色を使用しない
+- コントラスト比を適切に保つ
+- 目に優しい色使いを心がける
 
-必要に応じて以下のコンポーネントをimportして使用できます。その他のファイルはimportできません。`
+2. レイアウト制約:
+- 背景色の変更は厳禁 (bg-* クラスを使用しない)
+- TailwindCSSのみを使用してレスポンシブレイアウトを構築
+- アクセシビリティに配慮する
 
-const chatPrompt = `# 会話
-- 丁寧語を使用しない`
+3. コード品質:
+- コンポーネントの再利用を最大化
+- パフォーマンスを考慮したコード設計
+- モバイルファーストの考え方でUI設計
+
+## 作業
+
+指定されたコンポーネントのみをimportして使用できます。それ以外のファイルはimport禁止です。
+
+コンポーネントを使用する際は中身を取得してください。`
 
 type Props = {
   provider: OpenAIProvider
   messages: CoreMessage[]
   code: string
-  targetFiles: string[]
+  files: Record<string, string>
   tasks: string[]
 }
 
 export async function createShadcnuiCodeStream(props: Props) {
   const files: Record<string, string> = {
-    "src/app.tsx": props.code,
+    "src/app.tsx": props.files["src/app.tsx"],
+    "src/components/input.tsx": props.files["src/components/input.tsx"],
+    "src/components/button.tsx": props.files["src/components/button.tsx"],
+    "src/components/card.tsx": props.files["src/components/card.tsx"],
   }
-
-  for (const targetFile of props.targetFiles) {
-    const path = targetFile.replace("src", "~")
-    files[path] = shadcnuiFiles[targetFile]
-  }
-
-  console.log("files", files)
 
   const tasksText = props.tasks.map((task) => `- ${task}`).join("\n")
+
+  const filesPrompt = Object.keys(props.files)
+    .map((file) => `- ${file}`)
+    .join("\n")
 
   return streamText({
     model: props.provider.languageModel("gpt-4o", {
@@ -55,8 +71,22 @@ export async function createShadcnuiCodeStream(props: Props) {
     }),
     maxTokens: 2048,
     experimental_output: Output.object({ schema: zPartCode }),
+    maxSteps: 16,
+    tools: {
+      read_file_content: tool({
+        description: "ファイルの中身を取得する",
+        parameters: z.object({ file_path: z.string() }),
+        async execute(args) {
+          const filePath = args.file_path.replace("~", "src")
+          return {
+            content: props.files[filePath] ?? "",
+          }
+        },
+      }),
+    },
     messages: [
       { role: "system", content: prompt },
+      { role: "system", content: filesPrompt },
       { role: "system", content: JSON.stringify(files) },
       { role: "system", content: chatPrompt },
       { role: "system", content: codeRulePrompt },

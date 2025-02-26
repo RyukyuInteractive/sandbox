@@ -1,14 +1,16 @@
 import type { OpenAIProvider } from "@ai-sdk/openai"
 import { type CoreMessage, generateObject } from "ai"
 import { z } from "zod"
-import { chatPrompt } from "~/hono/lib/prompts/chat-prompt"
 
-const prompt = `ユーザの要望を元に、1つのページに含めるUIを4個以内で箇条書きで日本語で書き出しなさい。
-実装するの1ページのみであり、多目的にならないようにしてください。
+const prompt = `ユーザの要望に基づき、1つのページに含めるUI要素の追加の実装を8個以内で箇条書きで日本語で書き出してください。
 
-- 入力の指示がなければ基本的に閲覧を目的とする
-- 入力が目的の場合は入力に関する機能を含める
-- 閲覧が目的の場合は入力に関する機能を含めない`
+実装するのは1ページのみです。
+
+- 入力の指示がなければ、基本的に閲覧を目的とする
+- 入力が目的の場合は、入力に関する機能を含める
+- 閲覧が目的の場合は、入力に関する機能を含めない
+- ユーザビリティを考慮し、シンプルで直感的なデザインにする
+- 各UI要素の具体的な機能や役割を明確にする`
 
 type Props = {
   provider: OpenAIProvider
@@ -22,10 +24,6 @@ export async function createTasks(props: Props) {
       functions: z.array(z.string()),
     }),
     maxTokens: 2048,
-    messages: [
-      { role: "system", content: prompt },
-      { role: "system", content: chatPrompt },
-      ...props.messages,
-    ],
+    messages: [{ role: "system", content: prompt }, ...props.messages],
   })
 }

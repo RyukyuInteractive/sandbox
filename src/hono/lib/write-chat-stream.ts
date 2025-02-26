@@ -3,7 +3,6 @@ import type { CoreMessage, DataStreamWriter } from "ai"
 import { createChatStream } from "~/hono/lib/streams/create-chat-stream"
 import { createContext } from "~/hono/lib/streams/create-context"
 import { createShadcnuiCodeStream } from "~/hono/lib/streams/create-shadcnui-code-stream"
-import { createShadcnuiDepsStream } from "~/hono/lib/streams/create-shadcnui-deps-stream"
 import { createTasks } from "~/hono/lib/streams/create-tasks"
 
 type Props = {
@@ -49,22 +48,9 @@ export async function writeChatStream(stream: DataStreamWriter, props: Props) {
       messages: props.messages,
     })
 
-    stream.writeMessageAnnotation("context-in-deps")
-
     console.log("tasks.object", tasks.object)
 
-    /**
-     * コンポーネントを選ぶ
-     */
-    const deps = await createShadcnuiDepsStream({
-      provider: provider,
-      messages: props.messages,
-      tasks: tasks.object.functions,
-    })
-
     stream.writeMessageAnnotation("context-in-code")
-
-    console.log("deps.object", deps.object)
 
     /**
      * ファイルを編集する
@@ -73,7 +59,7 @@ export async function writeChatStream(stream: DataStreamWriter, props: Props) {
       provider: provider,
       messages: props.messages,
       code: props.files["src/app.tsx"],
-      targetFiles: deps.object.components,
+      files: props.files,
       tasks: tasks.object.functions,
     })
 

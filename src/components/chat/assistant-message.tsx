@@ -18,6 +18,10 @@ type Props = {
 
 export function AssistantMessage(props: Props) {
   if (props.part.type === "text") {
+    if (props.part.text === "") {
+      return null
+    }
+
     const json = parsePartialJson(props.part.text)
 
     const block = json.value as DeepPartialBlock
