@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { RouterProvider, createRouter } from "@tanstack/react-router"
 import { createRoot } from "react-dom/client"
 import { Toaster } from "~/components/ui/sonner"
-import { routeTree } from "~/routeTree.gen"
+import { routeTree } from "~/lib/route-tree.gen"
 
 import "~/main.css"
 

@@ -4,8 +4,15 @@ import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 
 export default defineConfig({
-  plugins: [TanStackRouterVite(), react(), tailwindcss()],
-  resolve: { alias: { "~": "/src" } },
+  plugins: [
+    TanStackRouterVite({
+      routesDirectory: "routes",
+      generatedRouteTree: "lib/route-tree.gen.ts",
+    }),
+    react(),
+    tailwindcss(),
+  ],
+  resolve: { alias: { "~": __dirname } },
   server: {
     headers: {
       "Cross-Origin-Embedder-Policy": "require-corp",

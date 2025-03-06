@@ -1,4 +1,4 @@
-import { shadcnuiFiles } from "~/hono/lib/files/shadcnui-files"
+import { shadcnuiFiles } from "~/system/lib/files/shadcnui-files"
 
 export const mainTemplate: Record<string, string> = {
   ...shadcnuiFiles,

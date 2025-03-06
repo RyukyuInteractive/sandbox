@@ -1,7 +1,7 @@
 import { zValidator } from "@hono/zod-validator"
 import { z } from "zod"
-import { factory } from "~/hono/factory"
 import { MessageStorage } from "~/lib/message-storage"
+import { factory } from "~/system/factory"
 
 export const POST = factory.createHandlers(
   zValidator("json", z.object({ text: z.string() })),

@@ -1,7 +1,7 @@
 import type { OpenAIProvider } from "@ai-sdk/openai"
 import { type CoreMessage, Output, streamText } from "ai"
-import { chatPrompt } from "~/hono/lib/prompts/chat-prompt"
 import { zPartMessage } from "~/lib/parts/part-message"
+import { chatPrompt } from "~/system/lib/prompts/chat-prompt"
 
 const prompt = "あなたは開発者です。ユーザの技術的な質問に答えなさい。"
 

@@ -1,9 +1,9 @@
 import type { OpenAIProvider } from "@ai-sdk/openai"
 import { type CoreMessage, Output, streamText, tool } from "ai"
 import { z } from "zod"
-import { chatPrompt } from "~/hono/lib/prompts/chat-prompt"
-import { codeRulePrompt } from "~/hono/lib/prompts/code-rule-prompt"
 import { zPartCode } from "~/lib/parts/part-code"
+import { chatPrompt } from "~/system/lib/prompts/chat-prompt"
+import { codeRulePrompt } from "~/system/lib/prompts/code-rule-prompt"
 
 const prompt = `あなたは熟練したフロントエンドエンジニアです。ファイル「src/app.tsx」を指示に従って効率的に修正してください。
 

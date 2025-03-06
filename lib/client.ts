@@ -1,5 +1,5 @@
 import { hc } from "hono/client"
-import { hono } from "~/hono"
+import { hono } from "~/system"
 
 export const client = hc<typeof hono>("http://localhost:5173", {
   fetch(input, requestInit, _) {

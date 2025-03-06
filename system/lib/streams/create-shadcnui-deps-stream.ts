@@ -1,7 +1,7 @@
 import type { OpenAIProvider } from "@ai-sdk/openai"
 import { type CoreMessage, generateObject } from "ai"
 import { z } from "zod"
-import { chatPrompt } from "~/hono/lib/prompts/chat-prompt"
+import { chatPrompt } from "~/system/lib/prompts/chat-prompt"
 
 const allFiles = [
   {

@@ -2,8 +2,8 @@ import { zValidator } from "@hono/zod-validator"
 import { createDataStreamResponse } from "ai"
 import { HTTPException } from "hono/http-exception"
 import { z } from "zod"
-import { factory } from "~/hono/factory"
-import { writeChatStream } from "~/hono/lib/write-chat-stream"
+import { factory } from "~/system/factory"
+import { writeChatStream } from "~/system/lib/write-chat-stream"
 
 export const POST = factory.createHandlers(
   zValidator(

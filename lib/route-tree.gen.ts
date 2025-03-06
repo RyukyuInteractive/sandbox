@@ -10,39 +10,39 @@
 
 // Import Routes
 
-import { Route as rootRoute } from "./routes/__root"
-import { Route as IndexImport } from "./routes/index"
-import { Route as ProjectsProjectImport } from "./routes/projects.$project"
+import { Route as rootRoute } from './../routes/__root'
+import { Route as IndexImport } from './../routes/index'
+import { Route as ProjectsProjectImport } from './../routes/projects.$project'
 
 // Create/Update Routes
 
 const IndexRoute = IndexImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRoute,
 } as any)
 
 const ProjectsProjectRoute = ProjectsProjectImport.update({
-  id: "/projects/$project",
-  path: "/projects/$project",
+  id: '/projects/$project',
+  path: '/projects/$project',
   getParentRoute: () => rootRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/": {
-      id: "/"
-      path: "/"
-      fullPath: "/"
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    "/projects/$project": {
-      id: "/projects/$project"
-      path: "/projects/$project"
-      fullPath: "/projects/$project"
+    '/projects/$project': {
+      id: '/projects/$project'
+      path: '/projects/$project'
+      fullPath: '/projects/$project'
       preLoaderRoute: typeof ProjectsProjectImport
       parentRoute: typeof rootRoute
     }
@@ -52,27 +52,27 @@ declare module "@tanstack/react-router" {
 // Create and export the route tree
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute
-  "/projects/$project": typeof ProjectsProjectRoute
+  '/': typeof IndexRoute
+  '/projects/$project': typeof ProjectsProjectRoute
 }
 
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute
-  "/projects/$project": typeof ProjectsProjectRoute
+  '/': typeof IndexRoute
+  '/projects/$project': typeof ProjectsProjectRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
-  "/": typeof IndexRoute
-  "/projects/$project": typeof ProjectsProjectRoute
+  '/': typeof IndexRoute
+  '/projects/$project': typeof ProjectsProjectRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: "/" | "/projects/$project"
+  fullPaths: '/' | '/projects/$project'
   fileRoutesByTo: FileRoutesByTo
-  to: "/" | "/projects/$project"
-  id: "__root__" | "/" | "/projects/$project"
+  to: '/' | '/projects/$project'
+  id: '__root__' | '/' | '/projects/$project'
   fileRoutesById: FileRoutesById
 }
 

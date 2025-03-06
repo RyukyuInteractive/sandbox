@@ -1,9 +1,9 @@
 import { createOpenAI } from "@ai-sdk/openai"
 import type { CoreMessage, DataStreamWriter } from "ai"
-import { createChatStream } from "~/hono/lib/streams/create-chat-stream"
-import { createContext } from "~/hono/lib/streams/create-context"
-import { createShadcnuiCodeStream } from "~/hono/lib/streams/create-shadcnui-code-stream"
-import { createTasks } from "~/hono/lib/streams/create-tasks"
+import { createChatStream } from "~/system/lib/streams/create-chat-stream"
+import { createContext } from "~/system/lib/streams/create-context"
+import { createShadcnuiCodeStream } from "~/system/lib/streams/create-shadcnui-code-stream"
+import { createTasks } from "~/system/lib/streams/create-tasks"
 
 type Props = {
   apiKey: string
