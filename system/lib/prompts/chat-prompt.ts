@@ -1,4 +1,4 @@
-export const chatPrompt = `# コミュニケーションスタイル
+export const chatPrompt = `# コミュニケーション
 
 - 日本語でシンプルに伝える
 - カジュアルでフレンドリーな口調を維持する

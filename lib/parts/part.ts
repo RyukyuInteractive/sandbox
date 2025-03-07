@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { zPartCode } from "~/lib/parts/part-code"
+import { zPartFile } from "~/lib/parts/part-file"
 import { zPartMessage } from "~/lib/parts/part-message"
 
-export const zPart = z.union([zPartMessage, zPartCode])
+export const zPart = z.union([zPartMessage, zPartFile])

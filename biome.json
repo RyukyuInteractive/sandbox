@@ -14,9 +14,9 @@
       }
     },
     "ignore": [
-      "src/components/ui/**/*",
-      "src/hooks/use-toast.ts",
-      "src/routeTree.gen.ts"
+      "components/ui/**/*",
+      "hooks/use-toast.ts",
+      "lib/route-tree.gen.ts"
     ]
   },
   "javascript": {

@@ -4,21 +4,21 @@ export class CredentialStorage {
   }
 
   get noEnvApiKey() {
-    return import.meta.env.VITE_OPENAI_API_KEY.length === 0
+    return import.meta.env.VITE_ANTHROPIC_API_KEY.length === 0
   }
 
   get noLocalApiKey() {
-    const apiKey = localStorage.getItem("openai-api-key")
+    const apiKey = localStorage.getItem("sandbox.anthropic-api-key")
 
     return apiKey === null
   }
 
   readEnvApiKey() {
-    return import.meta.env.VITE_OPENAI_API_KEY || null
+    return import.meta.env.VITE_ANTHROPIC_API_KEY || null
   }
 
   readLocalApiKey() {
-    return localStorage.getItem("openai-api-key")
+    return localStorage.getItem("sandbox.anthropic-api-key")
   }
 
   readApiKey() {
@@ -34,6 +34,6 @@ export class CredentialStorage {
   }
 
   writeLocalApiKey(apiKey: string) {
-    localStorage.setItem("openai-api-key", apiKey)
+    localStorage.setItem("sandbox.anthropic-api-key", apiKey)
   }
 }

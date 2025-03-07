@@ -12,7 +12,7 @@ export function ChatMessage(props: Props) {
   }
 
   if (props.message.role === "assistant") {
-    const parts = props.message.parts.filter((part) => part.type === "text")
+    const parts = props.message.parts.toReversed()
 
     return parts.map((part, index) => (
       <AssistantMessage key={index.toFixed()} part={part} />

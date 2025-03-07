@@ -1,5 +1,8 @@
 type Props = string | null
 
+/**
+ * TODO: 整理する
+ */
 export function toAnnotationMessage(annotation: Props) {
   if (annotation === null) {
     return null

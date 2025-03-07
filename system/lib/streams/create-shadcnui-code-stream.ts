@@ -1,7 +1,7 @@
 import type { OpenAIProvider } from "@ai-sdk/openai"
 import { type CoreMessage, Output, streamText, tool } from "ai"
 import { z } from "zod"
-import { zPartCode } from "~/lib/parts/part-code"
+import { zPartFile } from "~/lib/parts/part-file"
 import { chatPrompt } from "~/system/lib/prompts/chat-prompt"
 import { codeRulePrompt } from "~/system/lib/prompts/code-rule-prompt"
 
@@ -70,14 +70,14 @@ export async function createShadcnuiCodeStream(props: Props) {
       structuredOutputs: true,
     }),
     maxTokens: 2048,
-    experimental_output: Output.object({ schema: zPartCode }),
+    experimental_output: Output.object({ schema: zPartFile }),
     maxSteps: 16,
     tools: {
       read_file_content: tool({
         description: "ファイルの中身を取得する",
-        parameters: z.object({ file_path: z.string() }),
+        parameters: z.object({ path: z.string() }),
         async execute(args) {
-          const filePath = args.file_path.replace("~", "src")
+          const filePath = args.path.replace("~", "src")
           return {
             content: props.files[filePath] ?? "",
           }
