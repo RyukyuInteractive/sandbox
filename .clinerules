@@ -21,18 +21,22 @@ Node.jsを使用することはできません。Webcontainersを用いてNode.j
 - `components/chat` - チャットのメッセージに関係
 - `components/pages` - ページに関係
 - `components/ui` - UIライブラリ（shadcn/ui）
+- `hooks` - ReactのHooks
+- `lib/` - 複数の箇所で呼び出される関数やクラス
+- `lib/client.ts` - Honoのクライアント
+- `lib/ai/` - ブラウザのチャットに関する処理
+- `lib/tools/` - Claudeが呼び出すToolの一覧
+- `lib/message-storage.ts` - メッセージを管理するストレージのクラス
+- `routes/` - ページ
+- `routes/index.tsx` - メインの画面
 - `system/lib/files` - コード生成に関するファイルのプリセット
 - `system/lib/prompts` - AIエージェントのプロンプト
-- `system/lib/streams` - AIエージェントのAPIの実行に関する処理
 - `system/lib/routes` - ブラウザ上で動作するHonoのエンドポイント
+- `system/lib/routes/index.ts` - AIエージェントのエンドポイント
 - `system/lib/write-chat-stream.ts` - コード生成などStreamを読み書きする
 - `system/factory` - Honoのfactory
 - `system/factory` - Honoのfactory
 - `system/index.ts` - Honoのエントリーポイント
-- `hooks` - ReactのHooks
-- `lib/client.ts` - Honoのクライアント
-- `routes` - ページ
-- `routes/index.tsx` - メインの画面
 
 ### ライブラリ
 
