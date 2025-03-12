@@ -1,9 +1,10 @@
 import { useChat } from "@ai-sdk/react"
 import { useQuery } from "@tanstack/react-query"
 import type { WebContainerProcess } from "@webcontainer/api"
-import { Terminal } from "@xterm/xterm"
-import type { ITerminalInitOnlyOptions, ITerminalOptions } from "@xterm/xterm"
 import type { SpawnOptions } from "@webcontainer/api"
+import { Terminal as XTerm } from "@xterm/xterm"
+import type { ITerminalInitOnlyOptions, ITerminalOptions } from "@xterm/xterm"
+import { Code, Send, Terminal } from "lucide-react"
 import type { editor } from "monaco-editor-core"
 import * as monaco from "monaco-editor-core"
 import { useEffect, useRef, useState } from "react"
@@ -55,24 +56,20 @@ export function Workspace(props: Props) {
 
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
 
-  const terminalRef = useRef<Terminal>(null)
+  const terminalRef = useRef<XTerm>(null)
 
   const terminalComponentRef = useRef<HTMLDivElement>(null)
 
   const view = useViews()
 
   const { data, isPending } = useQuery({
-    queryKey: ["fuga", props.roomId],
+    queryKey: ["message", props.roomId],
     queryFn: async () => {
       const res = await client.message[":roomId"].$get({
         param: { roomId: props.roomId },
       })
 
-      if (!res.ok) {
-        throw new Error("Failed to fetch messages")
-      }
-
-      return res.json()
+      return await res.json()
     },
   })
 
@@ -233,10 +230,10 @@ export function Workspace(props: Props) {
   } satisfies ITerminalOptions & ITerminalInitOnlyOptions
 
   const spawnOptions = {
-    terminal : {
+    terminal: {
       cols: terminalOptions.cols,
       rows: terminalOptions.rows,
-    }
+    },
   } satisfies SpawnOptions
 
   /**
@@ -245,7 +242,7 @@ export function Workspace(props: Props) {
   async function runDevContainer() {
     if (webContainer === null) return
 
-    terminalRef.current = new Terminal(terminalOptions)
+    terminalRef.current = new XTerm(terminalOptions)
 
     if (terminalComponentRef.current !== null) {
       terminalRef.current.open(terminalComponentRef.current)
@@ -255,7 +252,11 @@ export function Workspace(props: Props) {
 
     await webContainer.mount(fileSystemTree)
 
-    const installProcess = await webContainer.spawn("npm", ["install"], spawnOptions)
+    const installProcess = await webContainer.spawn(
+      "npm",
+      ["install"],
+      spawnOptions,
+    )
 
     installProcess.output.pipeTo(
       new WritableStream({
@@ -271,10 +272,11 @@ export function Workspace(props: Props) {
       throw new Error("Installation failed")
     }
 
-    stateRef.current.devProcess = await webContainer.spawn("npm", [
-      "run",
-      "dev",
-    ], spawnOptions)
+    stateRef.current.devProcess = await webContainer.spawn(
+      "npm",
+      ["run", "dev"],
+      spawnOptions,
+    )
 
     stateRef.current.devProcess.output.pipeTo(
       new WritableStream({
@@ -325,20 +327,27 @@ export function Workspace(props: Props) {
   const annotation = getCurrentAnnotation(chat.messages)
 
   return (
-    <div className="flex h-svh w-full">
-      <aside className="flex h-full w-80 min-w-80 flex-col gap-y-2 py-2 pl-2">
-        <Card className="h-1/2 w-full overflow-hidden">
-          <div className="flex h-full flex-col overflow-hidden">
-            <form className="flex gap-x-2 p-2" onSubmit={onSubmit}>
+    <div className="flex h-svh w-full bg-gradient-to-b from-zinc-900 via-gray-900 to-black">
+      <aside className="flex h-full w-96 min-w-96 flex-col gap-y-4 px-3 py-4">
+        <Card className="h-1/2 w-full overflow-hidden rounded-xl border-zinc-800 bg-black/20">
+          <div className="scrollbar-thin scrollbar-track-zinc-900 scrollbar-thumb-zinc-700 flex h-full flex-col overflow-hidden">
+            <form className="flex gap-x-2 p-4" onSubmit={onSubmit}>
               <Input
+                className="border-zinc-800 bg-zinc-900/80 text-white placeholder:text-zinc-400"
                 value={chat.input}
-                placeholder="なにをしたいですか？"
+                placeholder="プロンプトを入力"
                 onChange={chat.handleInputChange}
               />
-              <Button variant={"outline"}>{"送信"}</Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-emerald-400 transition-all hover:rotate-[-15deg] hover:scale-110 hover:bg-emerald-500/10 hover:text-emerald-300 active:scale-90"
+              >
+                <Send className="h-6 w-6" />
+              </Button>
             </form>
-            <Separator />
-            <ul className="space-y-2 overflow-y-scroll p-2">
+            <Separator className="bg-zinc-800" />
+            <ul className="space-y-2 overflow-y-auto p-4 text-zinc-300">
               {chat.status !== "ready" && (
                 <li>
                   <p className="text-xs">{toAnnotationMessage(annotation)}</p>
@@ -355,42 +364,50 @@ export function Workspace(props: Props) {
           onSelectFile={onSelectFile}
         />
       </aside>
-      <main className="flex flex-1 flex-col gap-y-2 p-2">
-        <div className="flex gap-x-2">
+      <main className="flex flex-1 flex-col gap-y-4 p-4">
+        <div className="flex gap-x-4">
           <Button
-            className="h-auto py-1"
-            size={"sm"}
-            variant={view.state.includes("EDITOR") ? "default" : "secondary"}
+            size="icon"
+            variant="ghost"
+            className={cn(
+              "h-10 w-10 text-zinc-400 transition-all duration-200 hover:rotate-6 hover:scale-110",
+              view.state.includes("EDITOR") &&
+                "bg-emerald-500/10 text-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.3)] hover:text-emerald-300",
+            )}
             onClick={view.toggle("EDITOR")}
           >
-            {"CODE"}
+            <Code className="h-5 w-5" />
           </Button>
           <Button
-            className="h-auto py-1"
-            size={"sm"}
-            variant={view.state.includes("TERMINAL") ? "default" : "secondary"}
+            size="icon"
+            variant="ghost"
+            className={cn(
+              "hover:-rotate-6 h-10 w-10 text-zinc-400 transition-all duration-200 hover:scale-110",
+              view.state.includes("TERMINAL") &&
+                "bg-emerald-500/10 text-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.3)] hover:text-emerald-300",
+            )}
             onClick={view.toggle("TERMINAL")}
           >
-            {"TERMINAL"}
+            <Terminal className="h-5 w-5" />
           </Button>
         </div>
         <div className="relative flex flex-1 flex-col">
           <div className="h-full w-full overflow-hidden">
-            <Card className="h-full w-full overflow-hidden">
+            <Card className="h-full w-full overflow-hidden border-zinc-800 bg-black/30">
               <iframe
                 allow="cross-origin-isolated"
-                className={"h-full w-full flex-1"}
+                className="h-full w-full flex-1"
                 title="preview"
                 ref={iframeRef}
               />
             </Card>
           </div>
           <div
-            className={cn("absolute h-full w-full", {
+            className={cn("absolute inset-0", {
               hidden: !view.state.includes("EDITOR"),
             })}
           >
-            <Card className="h-full w-full overflow-hidden">
+            <Card className="h-full w-full overflow-hidden border-zinc-800 bg-black/50">
               <MonacoEditor
                 className="h-full w-full"
                 initialValue={stateRef.current.files[currentFilePath]}
@@ -400,13 +417,13 @@ export function Workspace(props: Props) {
             </Card>
           </div>
           <div
-            className={cn("absolute right-0 bottom-0 w-full p-2", {
+            className={cn("absolute right-0 bottom-0 w-full p-2 opacity-90", {
               hidden: !view.state.includes("TERMINAL"),
             })}
           >
-            <Card className="overflow-hidden py-2 shadow-xl">
+            <Card className="overflow-hidden border-zinc-800 bg-black p-2 ">
               <div
-                className="w-full overflow-x-hidden overflow-y-hidden"
+                className="h-full w-full overflow-x-hidden"
                 ref={terminalComponentRef}
               />
             </Card>

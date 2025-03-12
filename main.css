@@ -121,6 +121,14 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  *::-webkit-scrollbar {
+    @apply w-1.5 opacity-0;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    @apply rounded-md opacity-8 bg-zinc-800;
+  }
 }
 
 body {

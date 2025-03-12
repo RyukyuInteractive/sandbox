@@ -36,11 +36,7 @@ export function TopPage(props: Props) {
     queryFn: async () => {
       const res = await client.messages.$get()
 
-      if (!res.ok) {
-        throw new Error("Failed to fetch messages")
-      }
-
-      return res.json()
+      return await res.json()
     },
   })
 

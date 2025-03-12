@@ -29,7 +29,7 @@ export function AssistantMessage(props: Props) {
 
       return (
         <Card className="p-2">
-          <p className="whitespace-pre-wrap text-sm leading-relaxed">
+          <p className="whitespace-pre-wrap text-xs leading-relaxed">
             {args.message_to_user}
           </p>
         </Card>
@@ -43,10 +43,10 @@ export function AssistantMessage(props: Props) {
 
       return (
         <Card className="p-2">
-          <p className="whitespace-pre-wrap text-sm">
+          <p className="whitespace-pre-wrap text-xs">
             {"👀 ファイルを確認しました"}
           </p>
-          <p className="whitespace-pre-wrap text-sm">{args.path}</p>
+          <p className="whitespace-pre-wrap text-xs">{args.path}</p>
         </Card>
       )
     }
@@ -58,10 +58,10 @@ export function AssistantMessage(props: Props) {
 
       return (
         <Card className="p-2">
-          <p className="whitespace-pre-wrap text-sm">
+          <p className="whitespace-pre-wrap text-xs">
             {"👀 ファイルの一覧を取得しました"}
           </p>
-          <p className="whitespace-pre-wrap text-sm">{args.path}</p>
+          <p className="whitespace-pre-wrap text-xs">{args.path}</p>
         </Card>
       )
     }
@@ -73,10 +73,10 @@ export function AssistantMessage(props: Props) {
 
       return (
         <Card className="p-2">
-          <p className="whitespace-pre-wrap text-sm">
+          <p className="whitespace-pre-wrap text-xs">
             {"🔍 ファイルの検索を試みました"}
           </p>
-          <p className="whitespace-pre-wrap text-sm">{args.regex}</p>
+          <p className="whitespace-pre-wrap text-xs">{args.regex}</p>
         </Card>
       )
     }
@@ -88,10 +88,10 @@ export function AssistantMessage(props: Props) {
 
       return (
         <Card className="p-2">
-          <p className="whitespace-pre-wrap text-sm">
+          <p className="whitespace-pre-wrap text-xs">
             {"👀 ファイルを書きました"}
           </p>
-          <p className="whitespace-pre-wrap text-sm">{args.path}</p>
+          <p className="whitespace-pre-wrap text-xs">{args.path}</p>
         </Card>
       )
     }
@@ -103,10 +103,10 @@ export function AssistantMessage(props: Props) {
 
       return (
         <Card className="p-2">
-          <p className="whitespace-pre-wrap text-sm">
+          <p className="whitespace-pre-wrap text-xs">
             {"👀 コマンドを実行しました"}
           </p>
-          <p className="whitespace-pre-wrap text-sm">{args.command}</p>
+          <p className="whitespace-pre-wrap text-xs">{args.command}</p>
         </Card>
       )
     }
@@ -124,8 +124,8 @@ export function AssistantMessage(props: Props) {
     }
 
     return (
-      <Card className="overflow-hidden p-2">
-        <p className="whitespace-pre-wrap text-sm">{props.part.text}</p>
+      <Card className="p-2">
+        <p className="whitespace-pre-wrap text-xs">{props.part.text}</p>
       </Card>
     )
   }
