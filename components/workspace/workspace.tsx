@@ -1,4 +1,5 @@
 import { useChat } from "@ai-sdk/react"
+import { useQuery } from "@tanstack/react-query"
 import type { WebContainerProcess } from "@webcontainer/api"
 import { Terminal } from "@xterm/xterm"
 import type { editor } from "monaco-editor-core"
@@ -26,7 +27,7 @@ import { writeFileTool } from "~/lib/tools/write-file-tool"
 import { cn } from "~/lib/utils"
 
 type Props = {
-  projectId: string
+  roomId: string
 }
 
 export function Workspace(props: Props) {
@@ -58,8 +59,26 @@ export function Workspace(props: Props) {
 
   const view = useViews()
 
+  const { data, isPending } = useQuery({
+    queryKey: ["fuga", props.roomId],
+    queryFn: async () => {
+      const res = await client.message[":roomId"].$get({
+        param: { roomId: props.roomId },
+      })
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch messages")
+      }
+
+      return res.json()
+    },
+  })
+
   const chat = useChat({
+    id: props.roomId,
     maxSteps: 128,
+    initialMessages: data,
+    sendExtraMessageFields: true,
     async fetch(_, init) {
       if (typeof init?.body !== "string") throw new Error("init is undefined")
       return client.index.$post({ json: JSON.parse(init.body) })
@@ -169,8 +188,32 @@ export function Workspace(props: Props) {
   })
 
   useEffect(() => {
+    if (isPending || !data) return
+    /**
+     * 前回のメッセージでのファイルの変更を反映する
+     */
+    for (const message of data) {
+      if (message.role !== "assistant") continue
+      const toolInvocations = message.parts?.filter(
+        (part) => part.type === "tool-invocation",
+      )
+
+      if (!toolInvocations) continue
+
+      for (const { toolInvocation } of toolInvocations) {
+        if (toolInvocation.toolName === "write_to_file") {
+          stateRef.current.files[toolInvocation.args.path] =
+            toolInvocation.args.content
+        }
+
+        /**
+         * @TODO editorのファイルを書き換えるいい方法が見つからない。。
+         */
+      }
+    }
+
     runDevContainer()
-  }, [])
+  }, [isPending, data])
 
   /**
    * コンテナを起動する
@@ -239,8 +282,9 @@ export function Workspace(props: Props) {
   const onSelectFile = (path: string) => {
     stateRef.current.currentFilePath = path
     setCurrentFilePath(path)
+    const extension = path.split(".").pop()
     const content = stateRef.current.files[path] || ""
-    const newModel = monaco.editor.createModel(content)
+    const newModel = monaco.editor.createModel(content, extension)
     editorRef.current?.setModel(newModel)
   }
 

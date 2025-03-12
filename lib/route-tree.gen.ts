@@ -10,21 +10,28 @@
 
 // Import Routes
 
+import { Route as RoomIdImport } from "./../routes/$roomId"
 import { Route as rootRoute } from "./../routes/__root"
 import { Route as IndexImport } from "./../routes/index"
-import { Route as ProjectsProjectImport } from "./../routes/projects.$project"
+import { Route as SettingsImport } from "./../routes/settings"
 
 // Create/Update Routes
+
+const SettingsRoute = SettingsImport.update({
+  id: "/settings",
+  path: "/settings",
+  getParentRoute: () => rootRoute,
+} as any)
+
+const RoomIdRoute = RoomIdImport.update({
+  id: "/$roomId",
+  path: "/$roomId",
+  getParentRoute: () => rootRoute,
+} as any)
 
 const IndexRoute = IndexImport.update({
   id: "/",
   path: "/",
-  getParentRoute: () => rootRoute,
-} as any)
-
-const ProjectsProjectRoute = ProjectsProjectImport.update({
-  id: "/projects/$project",
-  path: "/projects/$project",
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -39,11 +46,18 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    "/projects/$project": {
-      id: "/projects/$project"
-      path: "/projects/$project"
-      fullPath: "/projects/$project"
-      preLoaderRoute: typeof ProjectsProjectImport
+    "/$roomId": {
+      id: "/$roomId"
+      path: "/$roomId"
+      fullPath: "/$roomId"
+      preLoaderRoute: typeof RoomIdImport
+      parentRoute: typeof rootRoute
+    }
+    "/settings": {
+      id: "/settings"
+      path: "/settings"
+      fullPath: "/settings"
+      preLoaderRoute: typeof SettingsImport
       parentRoute: typeof rootRoute
     }
   }
@@ -53,37 +67,42 @@ declare module "@tanstack/react-router" {
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute
-  "/projects/$project": typeof ProjectsProjectRoute
+  "/$roomId": typeof RoomIdRoute
+  "/settings": typeof SettingsRoute
 }
 
 export interface FileRoutesByTo {
   "/": typeof IndexRoute
-  "/projects/$project": typeof ProjectsProjectRoute
+  "/$roomId": typeof RoomIdRoute
+  "/settings": typeof SettingsRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   "/": typeof IndexRoute
-  "/projects/$project": typeof ProjectsProjectRoute
+  "/$roomId": typeof RoomIdRoute
+  "/settings": typeof SettingsRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: "/" | "/projects/$project"
+  fullPaths: "/" | "/$roomId" | "/settings"
   fileRoutesByTo: FileRoutesByTo
-  to: "/" | "/projects/$project"
-  id: "__root__" | "/" | "/projects/$project"
+  to: "/" | "/$roomId" | "/settings"
+  id: "__root__" | "/" | "/$roomId" | "/settings"
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ProjectsProjectRoute: typeof ProjectsProjectRoute
+  RoomIdRoute: typeof RoomIdRoute
+  SettingsRoute: typeof SettingsRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ProjectsProjectRoute: ProjectsProjectRoute,
+  RoomIdRoute: RoomIdRoute,
+  SettingsRoute: SettingsRoute,
 }
 
 export const routeTree = rootRoute
@@ -97,14 +116,18 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/projects/$project"
+        "/$roomId",
+        "/settings"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
-    "/projects/$project": {
-      "filePath": "projects.$project.tsx"
+    "/$roomId": {
+      "filePath": "$roomId.tsx"
+    },
+    "/settings": {
+      "filePath": "settings.tsx"
     }
   }
 }

@@ -1,19 +1,16 @@
-import { zValidator } from "@hono/zod-validator"
-import { z } from "zod"
-import { MessageStorage } from "~/lib/message-storage"
+import type { Message } from 'ai'
+import { messageStorage } from "~/lib/message-storage"
 import { factory } from "~/system/factory"
 
-export const POST = factory.createHandlers(
-  zValidator("json", z.object({ text: z.string() })),
-  async (c) => {
-    return c.json({})
-  },
-)
+export const GET = factory.createHandlers(async (c) => {
+  const roomIds = await messageStorage.keys()
 
-export const GET = factory.createHandlers((c) => {
-  const storage = new MessageStorage()
+  const messages = await Promise.all(
+    roomIds.map(async roomId => ({
+      roomId,
+      messages: await messageStorage.get<Message[]>(roomId) ?? []
+    }))
+  )
 
-  const messages = storage.findMany()
-
-  return c.json([])
+  return c.json(messages)
 })
