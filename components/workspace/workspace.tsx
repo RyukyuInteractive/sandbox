@@ -2,6 +2,8 @@ import { useChat } from "@ai-sdk/react"
 import { useQuery } from "@tanstack/react-query"
 import type { WebContainerProcess } from "@webcontainer/api"
 import { Terminal } from "@xterm/xterm"
+import type { ITerminalInitOnlyOptions, ITerminalOptions } from "@xterm/xterm"
+import type { SpawnOptions } from "@webcontainer/api"
 import type { editor } from "monaco-editor-core"
 import * as monaco from "monaco-editor-core"
 import { useEffect, useRef, useState } from "react"
@@ -213,7 +215,29 @@ export function Workspace(props: Props) {
     }
 
     runDevContainer()
+    return () => {
+      /**
+       * terminalが複数回生成されるのを防ぐ
+       */
+      terminalRef.current?.dispose()
+    }
   }, [isPending, data])
+
+  const terminalOptions = {
+    rows: 10,
+    fontSize: 12,
+    lineHeight: 1.2,
+    cols: 300,
+    cursorBlink: true,
+    cursorStyle: "underline",
+  } satisfies ITerminalOptions & ITerminalInitOnlyOptions
+
+  const spawnOptions = {
+    terminal : {
+      cols: terminalOptions.cols,
+      rows: terminalOptions.rows,
+    }
+  } satisfies SpawnOptions
 
   /**
    * コンテナを起動する
@@ -221,7 +245,7 @@ export function Workspace(props: Props) {
   async function runDevContainer() {
     if (webContainer === null) return
 
-    terminalRef.current = new Terminal({})
+    terminalRef.current = new Terminal(terminalOptions)
 
     if (terminalComponentRef.current !== null) {
       terminalRef.current.open(terminalComponentRef.current)
@@ -231,7 +255,7 @@ export function Workspace(props: Props) {
 
     await webContainer.mount(fileSystemTree)
 
-    const installProcess = await webContainer.spawn("npm", ["install"])
+    const installProcess = await webContainer.spawn("npm", ["install"], spawnOptions)
 
     installProcess.output.pipeTo(
       new WritableStream({
@@ -250,7 +274,7 @@ export function Workspace(props: Props) {
     stateRef.current.devProcess = await webContainer.spawn("npm", [
       "run",
       "dev",
-    ])
+    ], spawnOptions)
 
     stateRef.current.devProcess.output.pipeTo(
       new WritableStream({
@@ -380,9 +404,9 @@ export function Workspace(props: Props) {
               hidden: !view.state.includes("TERMINAL"),
             })}
           >
-            <Card className="overflow-hidden p-0 shadow-xl">
+            <Card className="overflow-hidden py-2 shadow-xl">
               <div
-                className="h-40 w-full overflow-x-hidden overflow-y-scroll rounded-md"
+                className="w-full overflow-x-hidden overflow-y-hidden"
                 ref={terminalComponentRef}
               />
             </Card>
