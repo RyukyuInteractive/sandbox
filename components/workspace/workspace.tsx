@@ -4,13 +4,14 @@ import type { WebContainerProcess } from "@webcontainer/api"
 import type { SpawnOptions } from "@webcontainer/api"
 import { Terminal as XTerm } from "@xterm/xterm"
 import type { ITerminalInitOnlyOptions, ITerminalOptions } from "@xterm/xterm"
-import { Code, Send, Terminal } from "lucide-react"
+import { Code, Home, Send, Terminal } from "lucide-react"
 import type { editor } from "monaco-editor-core"
 import * as monaco from "monaco-editor-core"
 import { useEffect, useRef, useState } from "react"
 import { Button } from "~/components/ui/button"
 import { Card } from "~/components/ui/card"
 import { Input } from "~/components/ui/input"
+import { LinkButtonComponent } from "~/components/ui/link-button"
 import { Separator } from "~/components/ui/separator"
 import { ChatMessage } from "~/components/workspace/chat-message"
 import { FileTreeCard } from "~/components/workspace/file-tree-card"
@@ -333,7 +334,7 @@ export function Workspace(props: Props) {
           <div className="scrollbar-thin scrollbar-track-zinc-900 scrollbar-thumb-zinc-700 flex h-full flex-col overflow-hidden">
             <form className="flex gap-x-2 p-4" onSubmit={onSubmit}>
               <Input
-                className="border-zinc-800 bg-zinc-900/80 text-white placeholder:text-zinc-400"
+                className="h-8 border-zinc-800 bg-zinc-900/80 text-white placeholder:text-zinc-400"
                 value={chat.input}
                 placeholder="プロンプトを入力"
                 onChange={chat.handleInputChange}
@@ -341,13 +342,13 @@ export function Workspace(props: Props) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-emerald-400 transition-all hover:rotate-[-15deg] hover:scale-110 hover:bg-emerald-500/10 hover:text-emerald-300 active:scale-90"
+                className="h-8 w-8 text-emerald-400 transition-all hover:rotate-[-15deg] hover:scale-110 hover:bg-emerald-500/10 hover:text-emerald-300 active:scale-90"
               >
                 <Send className="h-6 w-6" />
               </Button>
             </form>
             <Separator className="bg-zinc-800" />
-            <ul className="space-y-2 overflow-y-auto p-4 text-zinc-300">
+            <ul className="space-y-2 overflow-y-auto p-3 text-zinc-300">
               {chat.status !== "ready" && (
                 <li>
                   <p className="text-xs">{toAnnotationMessage(annotation)}</p>
@@ -370,26 +371,35 @@ export function Workspace(props: Props) {
             size="icon"
             variant="ghost"
             className={cn(
-              "h-10 w-10 text-zinc-400 transition-all duration-200 hover:rotate-6 hover:scale-110",
+              "h-8 w-8 text-zinc-400 transition-all duration-200 hover:rotate-6 hover:scale-110",
               view.state.includes("EDITOR") &&
                 "bg-emerald-500/10 text-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.3)] hover:text-emerald-300",
             )}
             onClick={view.toggle("EDITOR")}
           >
-            <Code className="h-5 w-5" />
+            <Code className="h-4 w-4" />
           </Button>
           <Button
             size="icon"
             variant="ghost"
             className={cn(
-              "hover:-rotate-6 h-10 w-10 text-zinc-400 transition-all duration-200 hover:scale-110",
+              "hover:-rotate-6 h-8 w-8 text-zinc-400 transition-all duration-200 hover:scale-110",
               view.state.includes("TERMINAL") &&
                 "bg-emerald-500/10 text-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.3)] hover:text-emerald-300",
             )}
             onClick={view.toggle("TERMINAL")}
           >
-            <Terminal className="h-5 w-5" />
+            <Terminal className="h-4 w-4" />
           </Button>
+          <div className="flex-1" />
+          <LinkButtonComponent
+            to="/"
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8 text-zinc-400 transition-all duration-200 hover:rotate-6 hover:scale-110 hover:text-emerald-300"
+          >
+            <Home className="h-4 w-4" />
+          </LinkButtonComponent>
         </div>
         <div className="relative flex flex-1 flex-col">
           <div className="h-full w-full overflow-hidden">

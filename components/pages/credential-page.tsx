@@ -1,4 +1,4 @@
-import { ArrowLeft, Info, Key, Shield } from "lucide-react"
+import { Home, Info, Key, Shield } from "lucide-react"
 import { useState } from "react"
 import { Button } from "~/components/ui/button"
 import {
@@ -33,11 +33,11 @@ export function CredentialPage(props: Props) {
     <div className="relative flex min-h-screen items-center justify-center bg-gradient-to-b from-zinc-900 via-gray-900 to-black">
       <LinkButtonComponent
         to="/"
+        size="icon"
         variant="ghost"
-        className="absolute top-4 left-4 gap-2 text-zinc-400 hover:text-white"
+        className="absolute top-4 right-4 h-8 w-8 text-zinc-400 transition-all duration-200 hover:rotate-6 hover:scale-110 hover:text-emerald-300"
       >
-        <ArrowLeft className="h-5 w-5" />
-        トップページに戻る
+        <Home className="h-4 w-4" />
       </LinkButtonComponent>
       <Card className="w-full max-w-md border-zinc-800 bg-black/30 backdrop-blur-sm">
         <CardHeader className="space-y-4 p-6">
