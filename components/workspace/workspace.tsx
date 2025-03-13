@@ -181,6 +181,12 @@ export function Workspace(props: Props) {
 
   useEffect(() => {
     if (!props.messages) return
+
+    /**
+     * ファイルツリーの初期化
+     */
+    stateRef.current.files = mainTemplate
+
     /**
      * 前回のメッセージでのファイルの変更を反映する
      */
