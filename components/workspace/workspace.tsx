@@ -33,7 +33,7 @@ import { cn } from "~/lib/utils"
 type Props = {
   messages?: Message[]
   prompt?: string
-  roomId: string
+  projectId: string
 }
 
 export function Workspace(props: Props) {
@@ -66,7 +66,7 @@ export function Workspace(props: Props) {
   const view = useViews()
 
   const chat = useChat({
-    id: props.roomId,
+    id: props.projectId,
     maxSteps: 128,
     initialInput: props.prompt,
     initialMessages: props.messages,

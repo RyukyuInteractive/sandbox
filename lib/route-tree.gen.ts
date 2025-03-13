@@ -10,53 +10,53 @@
 
 // Import Routes
 
-import { Route as RoomIdImport } from "./../routes/$roomId"
-import { Route as rootRoute } from "./../routes/__root"
-import { Route as IndexImport } from "./../routes/index"
-import { Route as SettingsImport } from "./../routes/settings"
+import { Route as rootRoute } from './../routes/__root'
+import { Route as SettingsImport } from './../routes/settings'
+import { Route as ProjectImport } from './../routes/$project'
+import { Route as IndexImport } from './../routes/index'
 
 // Create/Update Routes
 
 const SettingsRoute = SettingsImport.update({
-  id: "/settings",
-  path: "/settings",
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRoute,
 } as any)
 
-const RoomIdRoute = RoomIdImport.update({
-  id: "/$roomId",
-  path: "/$roomId",
+const ProjectRoute = ProjectImport.update({
+  id: '/$project',
+  path: '/$project',
   getParentRoute: () => rootRoute,
 } as any)
 
 const IndexRoute = IndexImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/": {
-      id: "/"
-      path: "/"
-      fullPath: "/"
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    "/$roomId": {
-      id: "/$roomId"
-      path: "/$roomId"
-      fullPath: "/$roomId"
-      preLoaderRoute: typeof RoomIdImport
+    '/$project': {
+      id: '/$project'
+      path: '/$project'
+      fullPath: '/$project'
+      preLoaderRoute: typeof ProjectImport
       parentRoute: typeof rootRoute
     }
-    "/settings": {
-      id: "/settings"
-      path: "/settings"
-      fullPath: "/settings"
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
       preLoaderRoute: typeof SettingsImport
       parentRoute: typeof rootRoute
     }
@@ -66,42 +66,42 @@ declare module "@tanstack/react-router" {
 // Create and export the route tree
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute
-  "/$roomId": typeof RoomIdRoute
-  "/settings": typeof SettingsRoute
+  '/': typeof IndexRoute
+  '/$project': typeof ProjectRoute
+  '/settings': typeof SettingsRoute
 }
 
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute
-  "/$roomId": typeof RoomIdRoute
-  "/settings": typeof SettingsRoute
+  '/': typeof IndexRoute
+  '/$project': typeof ProjectRoute
+  '/settings': typeof SettingsRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
-  "/": typeof IndexRoute
-  "/$roomId": typeof RoomIdRoute
-  "/settings": typeof SettingsRoute
+  '/': typeof IndexRoute
+  '/$project': typeof ProjectRoute
+  '/settings': typeof SettingsRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: "/" | "/$roomId" | "/settings"
+  fullPaths: '/' | '/$project' | '/settings'
   fileRoutesByTo: FileRoutesByTo
-  to: "/" | "/$roomId" | "/settings"
-  id: "__root__" | "/" | "/$roomId" | "/settings"
+  to: '/' | '/$project' | '/settings'
+  id: '__root__' | '/' | '/$project' | '/settings'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  RoomIdRoute: typeof RoomIdRoute
+  ProjectRoute: typeof ProjectRoute
   SettingsRoute: typeof SettingsRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  RoomIdRoute: RoomIdRoute,
+  ProjectRoute: ProjectRoute,
   SettingsRoute: SettingsRoute,
 }
 
@@ -116,15 +116,15 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/$roomId",
+        "/$project",
         "/settings"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
-    "/$roomId": {
-      "filePath": "$roomId.tsx"
+    "/$project": {
+      "filePath": "$project.tsx"
     },
     "/settings": {
       "filePath": "settings.tsx"
