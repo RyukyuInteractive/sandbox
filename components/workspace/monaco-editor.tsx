@@ -22,12 +22,16 @@ export function MonacoEditor(props: Props) {
 
     if (props.editorRef.current !== null) return
 
+    const langs = ["tsx", "css", "ts", "js", "json"]
+
     const highlighter = await createHighlighter({
       themes: ["github-dark", "vitesse-light"],
-      langs: ["tsx"],
+      langs,
     })
 
-    monaco.languages.register({ id: "tsx" })
+    for (const lang of langs) {
+      monaco.languages.register({ id: lang })
+    }
 
     shikiToMonaco(highlighter, monaco)
 

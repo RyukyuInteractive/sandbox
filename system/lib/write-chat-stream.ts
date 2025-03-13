@@ -1,6 +1,7 @@
 import { createAnthropic } from "@ai-sdk/anthropic"
-import type { CoreMessage, DataStreamWriter } from "ai"
-import { streamText } from "ai"
+import type { DataStreamWriter, Message } from "ai"
+import { appendResponseMessages, streamText, wrapLanguageModel } from "ai"
+import { messageStorage } from "~/lib/message-storage"
 import { executeCommandTool } from "~/lib/tools/execute-command-tool"
 import { listFilesTool } from "~/lib/tools/list-files-tool"
 import { readFileTool } from "~/lib/tools/read-file-tool"
@@ -9,6 +10,7 @@ import { thinkingTool } from "~/lib/tools/think-tool"
 import { writeFileTool } from "~/lib/tools/write-file-tool"
 import { chatPrompt } from "~/system/lib/prompts/chat-prompt"
 import { codeRulePrompt } from "~/system/lib/prompts/code-rule-prompt"
+import { cacheMiddleware } from "~/system/middlewares/cache-middleware"
 
 const prompt = `あなたはファイルを読み書きしてWebサイトを開発する開発アシスタントです。
 ユーザーの要件に基づいて、仮想ファイルシステムを自由に操作してWebサイトやアプリケーションを構築します。
@@ -73,11 +75,12 @@ npm i <package>
 - モバイルファーストの考え方でUI設計`
 
 type Props = {
+  id: string
   apiKey: string
   template: string
   files: Record<string, string>
-  messages: CoreMessage[]
-  onMessage(message: CoreMessage): void
+  messages: Message[]
+  onMessage(message: Message): void
 }
 
 export async function writeChatStream(stream: DataStreamWriter, props: Props) {
@@ -95,7 +98,10 @@ export async function writeChatStream(stream: DataStreamWriter, props: Props) {
 
   const agentStream = streamText({
     toolCallStreaming: true,
-    model: provider.languageModel("claude-3-7-sonnet-20250219"),
+    model: wrapLanguageModel({
+      model: provider.languageModel("claude-3-7-sonnet-20250219"),
+      middleware: cacheMiddleware,
+    }),
     /**
      * TODO: experimental_outputを使用するとtoolsが機能しなくなる？
      */
@@ -120,6 +126,15 @@ export async function writeChatStream(stream: DataStreamWriter, props: Props) {
     ],
     experimental_generateMessageId() {
       return crypto.randomUUID()
+    },
+    async onFinish({ response }) {
+      await messageStorage.set(
+        props.id,
+        appendResponseMessages({
+          messages: props.messages,
+          responseMessages: response.messages,
+        }),
+      )
     },
   })
 

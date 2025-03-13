@@ -10,40 +10,54 @@
 
 // Import Routes
 
-import { Route as rootRoute } from "./../routes/__root"
-import { Route as IndexImport } from "./../routes/index"
-import { Route as ProjectsProjectImport } from "./../routes/projects.$project"
+import { Route as rootRoute } from './../routes/__root'
+import { Route as SettingsImport } from './../routes/settings'
+import { Route as ProjectImport } from './../routes/$project'
+import { Route as IndexImport } from './../routes/index'
 
 // Create/Update Routes
 
-const IndexRoute = IndexImport.update({
-  id: "/",
-  path: "/",
+const SettingsRoute = SettingsImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRoute,
 } as any)
 
-const ProjectsProjectRoute = ProjectsProjectImport.update({
-  id: "/projects/$project",
-  path: "/projects/$project",
+const ProjectRoute = ProjectImport.update({
+  id: '/$project',
+  path: '/$project',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const IndexRoute = IndexImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/": {
-      id: "/"
-      path: "/"
-      fullPath: "/"
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    "/projects/$project": {
-      id: "/projects/$project"
-      path: "/projects/$project"
-      fullPath: "/projects/$project"
-      preLoaderRoute: typeof ProjectsProjectImport
+    '/$project': {
+      id: '/$project'
+      path: '/$project'
+      fullPath: '/$project'
+      preLoaderRoute: typeof ProjectImport
+      parentRoute: typeof rootRoute
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsImport
       parentRoute: typeof rootRoute
     }
   }
@@ -52,38 +66,43 @@ declare module "@tanstack/react-router" {
 // Create and export the route tree
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute
-  "/projects/$project": typeof ProjectsProjectRoute
+  '/': typeof IndexRoute
+  '/$project': typeof ProjectRoute
+  '/settings': typeof SettingsRoute
 }
 
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute
-  "/projects/$project": typeof ProjectsProjectRoute
+  '/': typeof IndexRoute
+  '/$project': typeof ProjectRoute
+  '/settings': typeof SettingsRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
-  "/": typeof IndexRoute
-  "/projects/$project": typeof ProjectsProjectRoute
+  '/': typeof IndexRoute
+  '/$project': typeof ProjectRoute
+  '/settings': typeof SettingsRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: "/" | "/projects/$project"
+  fullPaths: '/' | '/$project' | '/settings'
   fileRoutesByTo: FileRoutesByTo
-  to: "/" | "/projects/$project"
-  id: "__root__" | "/" | "/projects/$project"
+  to: '/' | '/$project' | '/settings'
+  id: '__root__' | '/' | '/$project' | '/settings'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ProjectsProjectRoute: typeof ProjectsProjectRoute
+  ProjectRoute: typeof ProjectRoute
+  SettingsRoute: typeof SettingsRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ProjectsProjectRoute: ProjectsProjectRoute,
+  ProjectRoute: ProjectRoute,
+  SettingsRoute: SettingsRoute,
 }
 
 export const routeTree = rootRoute
@@ -97,14 +116,18 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/projects/$project"
+        "/$project",
+        "/settings"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
-    "/projects/$project": {
-      "filePath": "projects.$project.tsx"
+    "/$project": {
+      "filePath": "$project.tsx"
+    },
+    "/settings": {
+      "filePath": "settings.tsx"
     }
   }
 }

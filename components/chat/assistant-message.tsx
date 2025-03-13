@@ -28,8 +28,8 @@ export function AssistantMessage(props: Props) {
       const args = tool.parameters.parse(props.part.toolInvocation.args)
 
       return (
-        <Card className="p-2">
-          <p className="whitespace-pre-wrap text-sm leading-relaxed">
+        <Card className="px-3 py-2">
+          <p className="whitespace-pre-wrap text-xs leading-relaxed">
             {args.message_to_user}
           </p>
         </Card>
@@ -42,11 +42,11 @@ export function AssistantMessage(props: Props) {
       const args = tool.parameters.parse(props.part.toolInvocation.args)
 
       return (
-        <Card className="p-2">
-          <p className="whitespace-pre-wrap text-sm">
+        <Card className="px-3 py-2">
+          <p className="whitespace-pre-wrap text-xs/6">
             {"👀 ファイルを確認しました"}
           </p>
-          <p className="whitespace-pre-wrap text-sm">{args.path}</p>
+          <p className="whitespace-pre-wrap text-xs">{args.path}</p>
         </Card>
       )
     }
@@ -57,11 +57,11 @@ export function AssistantMessage(props: Props) {
       const args = tool.parameters.parse(props.part.toolInvocation.args)
 
       return (
-        <Card className="p-2">
-          <p className="whitespace-pre-wrap text-sm">
+        <Card className="px-3 py-2">
+          <p className="whitespace-pre-wrap text-xs/6">
             {"👀 ファイルの一覧を取得しました"}
           </p>
-          <p className="whitespace-pre-wrap text-sm">{args.path}</p>
+          <p className="whitespace-pre-wrap text-xs/6">{args.path}</p>
         </Card>
       )
     }
@@ -72,11 +72,11 @@ export function AssistantMessage(props: Props) {
       const args = tool.parameters.parse(props.part.toolInvocation.args)
 
       return (
-        <Card className="p-2">
-          <p className="whitespace-pre-wrap text-sm">
+        <Card className="px-3 py-2">
+          <p className="whitespace-pre-wrap text-xs/6">
             {"🔍 ファイルの検索を試みました"}
           </p>
-          <p className="whitespace-pre-wrap text-sm">{args.regex}</p>
+          <p className="whitespace-pre-wrap text-xs/6">{args.regex}</p>
         </Card>
       )
     }
@@ -87,11 +87,11 @@ export function AssistantMessage(props: Props) {
       const args = tool.parameters.parse(props.part.toolInvocation.args)
 
       return (
-        <Card className="p-2">
-          <p className="whitespace-pre-wrap text-sm">
+        <Card className="px-3 py-2">
+          <p className="whitespace-pre-wrap text-xs/6">
             {"👀 ファイルを書きました"}
           </p>
-          <p className="whitespace-pre-wrap text-sm">{args.path}</p>
+          <p className="whitespace-pre-wrap text-xs/6">{args.path}</p>
         </Card>
       )
     }
@@ -102,17 +102,17 @@ export function AssistantMessage(props: Props) {
       const args = tool.parameters.parse(props.part.toolInvocation.args)
 
       return (
-        <Card className="p-2">
-          <p className="whitespace-pre-wrap text-sm">
+        <Card className="px-3 py-2">
+          <p className="whitespace-pre-wrap text-xs/6">
             {"👀 コマンドを実行しました"}
           </p>
-          <p className="whitespace-pre-wrap text-sm">{args.command}</p>
+          <p className="whitespace-pre-wrap text-xs/6">{args.command}</p>
         </Card>
       )
     }
 
     return (
-      <Card className="p-2">
+      <Card className="px-3 py-2">
         <pre>{JSON.stringify(props.part.toolInvocation.args, null, 2)}</pre>
       </Card>
     )
@@ -124,8 +124,8 @@ export function AssistantMessage(props: Props) {
     }
 
     return (
-      <Card className="overflow-hidden p-2">
-        <p className="whitespace-pre-wrap text-sm">{props.part.text}</p>
+      <Card className="px-3 py-2">
+        <p className="whitespace-pre-wrap text-xs/6">{props.part.text}</p>
       </Card>
     )
   }

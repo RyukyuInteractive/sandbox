@@ -9,8 +9,8 @@ type Props = {
 
 export function FileTreeCard(props: Props) {
   return (
-    <Card className="w-full flex-1 overflow-hidden px-2">
-      <div className="h-full overflow-y-auto py-2">
+    <Card className="w-full flex-1 overflow-hidden rounded-xl border-zinc-800 bg-black/20">
+      <div className="h-full overflow-y-auto p-4 text-zinc-300">
         <FileTreeItem
           file={toFileSystemTree(props.files)}
           onClick={props.onSelectFile}

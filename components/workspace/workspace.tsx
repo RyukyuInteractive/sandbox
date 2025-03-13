@@ -1,12 +1,17 @@
 import { useChat } from "@ai-sdk/react"
 import type { WebContainerProcess } from "@webcontainer/api"
-import { Terminal } from "@xterm/xterm"
+import type { SpawnOptions } from "@webcontainer/api"
+import { Terminal as XTerm } from "@xterm/xterm"
+import type { ITerminalInitOnlyOptions, ITerminalOptions } from "@xterm/xterm"
+import type { Message } from "ai"
+import { Code, Home, Send, Terminal } from "lucide-react"
 import type { editor } from "monaco-editor-core"
 import * as monaco from "monaco-editor-core"
 import { useEffect, useRef, useState } from "react"
 import { Button } from "~/components/ui/button"
 import { Card } from "~/components/ui/card"
 import { Input } from "~/components/ui/input"
+import { LinkButtonComponent } from "~/components/ui/link-button"
 import { Separator } from "~/components/ui/separator"
 import { ChatMessage } from "~/components/workspace/chat-message"
 import { FileTreeCard } from "~/components/workspace/file-tree-card"
@@ -26,6 +31,8 @@ import { writeFileTool } from "~/lib/tools/write-file-tool"
 import { cn } from "~/lib/utils"
 
 type Props = {
+  messages?: Message[]
+  prompt?: string
   projectId: string
 }
 
@@ -36,7 +43,7 @@ export function Workspace(props: Props) {
     isLocked: boolean
     devProcess: WebContainerProcess | null
   }>({
-    files: mainTemplate,
+    files: structuredClone(mainTemplate),
     currentFilePath: "src/app.tsx",
     isLocked: false,
     devProcess: null,
@@ -52,14 +59,18 @@ export function Workspace(props: Props) {
 
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
 
-  const terminalRef = useRef<Terminal>(null)
+  const terminalRef = useRef<XTerm>(null)
 
   const terminalComponentRef = useRef<HTMLDivElement>(null)
 
   const view = useViews()
 
   const chat = useChat({
+    id: props.projectId,
     maxSteps: 128,
+    initialInput: props.prompt,
+    initialMessages: props.messages,
+    sendExtraMessageFields: true,
     async fetch(_, init) {
       if (typeof init?.body !== "string") throw new Error("init is undefined")
       return client.index.$post({ json: JSON.parse(init.body) })
@@ -169,8 +180,62 @@ export function Workspace(props: Props) {
   })
 
   useEffect(() => {
+    if (!props.messages) return
+
+    /**
+     * 前回のメッセージでのファイルの変更を反映する
+     */
+    for (const message of props.messages) {
+      if (message.role !== "assistant") continue
+      const toolInvocations = message.parts?.filter(
+        (part) => part.type === "tool-invocation",
+      )
+
+      if (!toolInvocations) continue
+
+      for (const { toolInvocation } of toolInvocations) {
+        if (toolInvocation.toolName === "write_to_file") {
+          stateRef.current.files[toolInvocation.args.path] =
+            toolInvocation.args.content
+        }
+
+        /**
+         * @TODO editorのファイルを書き換えるいい方法が見つからない。。
+         */
+      }
+    }
+
     runDevContainer()
-  }, [])
+
+    return () => {
+      /**
+       * ファイルツリーの初期化
+       */
+      stateRef.current.files = mainTemplate
+      /**
+       * terminalが複数回生成されるのを防ぐ
+       */
+      terminalRef.current?.dispose()
+    }
+  }, [props.messages])
+
+  console.log(stateRef.current.files)
+
+  const terminalOptions = {
+    rows: 10,
+    fontSize: 12,
+    lineHeight: 1.2,
+    cols: 300,
+    cursorBlink: true,
+    cursorStyle: "underline",
+  } satisfies ITerminalOptions & ITerminalInitOnlyOptions
+
+  const spawnOptions = {
+    terminal: {
+      cols: terminalOptions.cols,
+      rows: terminalOptions.rows,
+    },
+  } satisfies SpawnOptions
 
   /**
    * コンテナを起動する
@@ -178,7 +243,7 @@ export function Workspace(props: Props) {
   async function runDevContainer() {
     if (webContainer === null) return
 
-    terminalRef.current = new Terminal({})
+    terminalRef.current = new XTerm(terminalOptions)
 
     if (terminalComponentRef.current !== null) {
       terminalRef.current.open(terminalComponentRef.current)
@@ -188,7 +253,11 @@ export function Workspace(props: Props) {
 
     await webContainer.mount(fileSystemTree)
 
-    const installProcess = await webContainer.spawn("npm", ["install"])
+    const installProcess = await webContainer.spawn(
+      "npm",
+      ["install"],
+      spawnOptions,
+    )
 
     installProcess.output.pipeTo(
       new WritableStream({
@@ -204,10 +273,11 @@ export function Workspace(props: Props) {
       throw new Error("Installation failed")
     }
 
-    stateRef.current.devProcess = await webContainer.spawn("npm", [
-      "run",
-      "dev",
-    ])
+    stateRef.current.devProcess = await webContainer.spawn(
+      "npm",
+      ["run", "dev"],
+      spawnOptions,
+    )
 
     stateRef.current.devProcess.output.pipeTo(
       new WritableStream({
@@ -239,8 +309,9 @@ export function Workspace(props: Props) {
   const onSelectFile = (path: string) => {
     stateRef.current.currentFilePath = path
     setCurrentFilePath(path)
+    const extension = path.split(".").pop()
     const content = stateRef.current.files[path] || ""
-    const newModel = monaco.editor.createModel(content)
+    const newModel = monaco.editor.createModel(content, extension)
     editorRef.current?.setModel(newModel)
   }
 
@@ -257,20 +328,27 @@ export function Workspace(props: Props) {
   const annotation = getCurrentAnnotation(chat.messages)
 
   return (
-    <div className="flex h-svh w-full">
-      <aside className="flex h-full w-80 min-w-80 flex-col gap-y-2 py-2 pl-2">
-        <Card className="h-1/2 w-full overflow-hidden">
-          <div className="flex h-full flex-col overflow-hidden">
-            <form className="flex gap-x-2 p-2" onSubmit={onSubmit}>
+    <div className="flex h-svh w-full bg-gradient-to-b from-zinc-900 via-gray-900 to-black">
+      <aside className="flex h-full w-96 min-w-96 flex-col gap-y-4 px-3 py-4">
+        <Card className="h-1/2 w-full overflow-hidden rounded-xl border-zinc-800 bg-black/20">
+          <div className="scrollbar-thin scrollbar-track-zinc-900 scrollbar-thumb-zinc-700 flex h-full flex-col overflow-hidden">
+            <form className="flex gap-x-2 p-4" onSubmit={onSubmit}>
               <Input
+                className="h-8 border-zinc-800 bg-zinc-900/80 text-white placeholder:text-zinc-400"
                 value={chat.input}
-                placeholder="なにをしたいですか？"
+                placeholder="プロンプトを入力"
                 onChange={chat.handleInputChange}
               />
-              <Button variant={"outline"}>{"送信"}</Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-emerald-400 transition-all hover:rotate-[-15deg] hover:scale-110 hover:bg-emerald-500/10 hover:text-emerald-300 active:scale-90"
+              >
+                <Send className="h-6 w-6" />
+              </Button>
             </form>
-            <Separator />
-            <ul className="space-y-2 overflow-y-scroll p-2">
+            <Separator className="bg-zinc-800" />
+            <ul className="space-y-2 overflow-y-auto p-3 text-zinc-300">
               {chat.status !== "ready" && (
                 <li>
                   <p className="text-xs">{toAnnotationMessage(annotation)}</p>
@@ -287,42 +365,59 @@ export function Workspace(props: Props) {
           onSelectFile={onSelectFile}
         />
       </aside>
-      <main className="flex flex-1 flex-col gap-y-2 p-2">
-        <div className="flex gap-x-2">
+      <main className="flex flex-1 flex-col gap-y-4 p-4">
+        <div className="flex gap-x-4">
           <Button
-            className="h-auto py-1"
-            size={"sm"}
-            variant={view.state.includes("EDITOR") ? "default" : "secondary"}
+            size="icon"
+            variant="ghost"
+            className={cn(
+              "h-8 w-8 text-zinc-400 transition-all duration-200 hover:rotate-6 hover:scale-110",
+              view.state.includes("EDITOR") &&
+                "bg-emerald-500/10 text-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.3)] hover:text-emerald-300",
+            )}
             onClick={view.toggle("EDITOR")}
           >
-            {"CODE"}
+            <Code className="h-4 w-4" />
           </Button>
           <Button
-            className="h-auto py-1"
-            size={"sm"}
-            variant={view.state.includes("TERMINAL") ? "default" : "secondary"}
+            size="icon"
+            variant="ghost"
+            className={cn(
+              "hover:-rotate-6 h-8 w-8 text-zinc-400 transition-all duration-200 hover:scale-110",
+              view.state.includes("TERMINAL") &&
+                "bg-emerald-500/10 text-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.3)] hover:text-emerald-300",
+            )}
             onClick={view.toggle("TERMINAL")}
           >
-            {"TERMINAL"}
+            <Terminal className="h-4 w-4" />
           </Button>
+          <div className="flex-1" />
+          <LinkButtonComponent
+            to="/"
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8 text-zinc-400 transition-all duration-200 hover:rotate-6 hover:scale-110 hover:text-emerald-300"
+          >
+            <Home className="h-4 w-4" />
+          </LinkButtonComponent>
         </div>
         <div className="relative flex flex-1 flex-col">
           <div className="h-full w-full overflow-hidden">
-            <Card className="h-full w-full overflow-hidden">
+            <Card className="h-full w-full overflow-hidden border-zinc-800 bg-black/30">
               <iframe
                 allow="cross-origin-isolated"
-                className={"h-full w-full flex-1"}
+                className="h-full w-full flex-1"
                 title="preview"
                 ref={iframeRef}
               />
             </Card>
           </div>
           <div
-            className={cn("absolute h-full w-full", {
+            className={cn("absolute inset-0", {
               hidden: !view.state.includes("EDITOR"),
             })}
           >
-            <Card className="h-full w-full overflow-hidden">
+            <Card className="h-full w-full overflow-hidden border-zinc-800 bg-black/50">
               <MonacoEditor
                 className="h-full w-full"
                 initialValue={stateRef.current.files[currentFilePath]}
@@ -332,13 +427,13 @@ export function Workspace(props: Props) {
             </Card>
           </div>
           <div
-            className={cn("absolute right-0 bottom-0 w-full p-2", {
+            className={cn("absolute right-0 bottom-0 w-full p-2 opacity-90", {
               hidden: !view.state.includes("TERMINAL"),
             })}
           >
-            <Card className="overflow-hidden p-0 shadow-xl">
+            <Card className="overflow-hidden border-zinc-800 bg-black p-2 ">
               <div
-                className="h-40 w-full overflow-x-hidden overflow-y-scroll rounded-md"
+                className="h-full w-full overflow-x-hidden"
                 ref={terminalComponentRef}
               />
             </Card>

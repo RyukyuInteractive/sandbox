@@ -42,6 +42,7 @@
     "shiki": "^2.3.2",
     "sonner": "^1.7.4",
     "tailwind-merge": "^3.0.1",
+    "unstorage": "^1.15.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {

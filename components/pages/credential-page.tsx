@@ -1,3 +1,4 @@
+import { Home, Info, Key, Shield } from "lucide-react"
 import { useState } from "react"
 import { Button } from "~/components/ui/button"
 import {
@@ -8,6 +9,7 @@ import {
   CardTitle,
 } from "~/components/ui/card"
 import { Input } from "~/components/ui/input"
+import { LinkButtonComponent } from "~/components/ui/link-button"
 import { Separator } from "~/components/ui/separator"
 import type { CredentialStorage } from "~/lib/credential-storage"
 
@@ -28,15 +30,39 @@ export function CredentialPage(props: Props) {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <Card className="w-md">
-        <CardHeader className="p-4">
-          <CardTitle>{"OpenAI API key"}</CardTitle>
-          <CardDescription>
-            環境変数にAPIキーが設定されていません。APIキーを入力してください。
-          </CardDescription>
+    <div className="relative flex min-h-screen items-center justify-center bg-gradient-to-b from-zinc-900 via-gray-900 to-black">
+      <LinkButtonComponent
+        to="/"
+        size="icon"
+        variant="ghost"
+        className="absolute top-4 right-4 h-8 w-8 text-zinc-400 transition-all duration-200 hover:rotate-6 hover:scale-110 hover:text-emerald-300"
+      >
+        <Home className="h-4 w-4" />
+      </LinkButtonComponent>
+      <Card className="w-full max-w-md border-zinc-800 bg-black/30 backdrop-blur-sm">
+        <CardHeader className="space-y-4 p-6">
+          <div className="flex items-center space-x-4">
+            <div className="rounded-full bg-emerald-500/10 p-2">
+              <Shield className="h-6 w-6 text-emerald-500" />
+            </div>
+            <div>
+              <CardTitle className="group relative text-2xl">
+                <span className="-top-1 -left-1 absolute animate-pulse text-emerald-500/50 blur-[2px]">
+                  API Key Setup
+                </span>
+                <span className="relative bg-gradient-to-r from-zinc-100 to-white bg-clip-text text-transparent">
+                  API Key Setup
+                </span>
+              </CardTitle>
+              <CardDescription className="mt-2 text-zinc-400">
+                環境変数にAPIキーが設定されていません。
+                <br />
+                OpenAIのAPIキーを入力して、AIによるWebサイト生成を始めましょう。
+              </CardDescription>
+            </div>
+          </div>
         </CardHeader>
-        <CardContent className="px-4 pb-4">
+        <CardContent className="space-y-4 p-6">
           <form
             onSubmit={(e) => {
               e.preventDefault()
@@ -44,20 +70,41 @@ export function CredentialPage(props: Props) {
             }}
             className="space-y-4"
           >
-            <Input
-              type="password"
-              placeholder="sk-..."
-              value={apiKey}
-              onChange={(event) => setApiKey(event.target.value)}
-            />
-            <Button type="submit" className="w-full">
-              {"保存"}
+            <div className="relative">
+              <Key className="-translate-y-1/2 absolute top-1/2 left-3 h-5 w-5 text-zinc-400" />
+              <Input
+                type="password"
+                placeholder="sk-..."
+                value={apiKey}
+                onChange={(event) => setApiKey(event.target.value)}
+                className="border-zinc-800 bg-zinc-900/80 pl-10 text-white placeholder:text-zinc-400"
+              />
+            </div>
+            <Button
+              type="submit"
+              className="w-full bg-emerald-600 text-white hover:bg-emerald-700"
+            >
+              APIキーを保存
             </Button>
           </form>
         </CardContent>
-        <Separator />
-        <CardContent className="p-4">
-          <p className="text-xs">{description}</p>
+        <Separator className="bg-zinc-800" />
+        <CardContent className="space-y-4 p-6">
+          <div className="flex items-start space-x-4">
+            <Info className="h-5 w-5 flex-shrink-0 text-zinc-400" />
+            <p className="text-sm text-zinc-400">
+              {description}
+              <br />
+              <a
+                href="https://platform.openai.com/api-keys"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-block text-emerald-500 hover:text-emerald-400"
+              >
+                OpenAI API Keysページへ →
+              </a>
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>

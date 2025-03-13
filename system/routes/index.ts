@@ -28,6 +28,7 @@ export const POST = factory.createHandlers(
     return createDataStreamResponse({
       async execute(stream) {
         await writeChatStream(stream, {
+          id: json.id,
           apiKey,
           template: "",
           files: json.files,

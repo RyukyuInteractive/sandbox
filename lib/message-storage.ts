@@ -1,13 +1,3 @@
-import type { UIMessage } from "ai"
+import { createStorage } from "~/lib/create-storage"
 
-const messages: UIMessage[] = []
-
-export class MessageStorage {
-  push(message: UIMessage) {
-    messages.push(message)
-  }
-
-  findMany() {
-    return messages
-  }
-}
+export const messageStorage = createStorage("messages:")
