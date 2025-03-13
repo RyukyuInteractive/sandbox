@@ -43,7 +43,7 @@ export function Workspace(props: Props) {
     isLocked: boolean
     devProcess: WebContainerProcess | null
   }>({
-    files: mainTemplate,
+    files: structuredClone(mainTemplate),
     currentFilePath: "src/app.tsx",
     isLocked: false,
     devProcess: null,
@@ -183,11 +183,6 @@ export function Workspace(props: Props) {
     if (!props.messages) return
 
     /**
-     * ファイルツリーの初期化
-     */
-    stateRef.current.files = mainTemplate
-
-    /**
      * 前回のメッセージでのファイルの変更を反映する
      */
     for (const message of props.messages) {
@@ -214,11 +209,17 @@ export function Workspace(props: Props) {
 
     return () => {
       /**
+       * ファイルツリーの初期化
+       */
+      stateRef.current.files = mainTemplate
+      /**
        * terminalが複数回生成されるのを防ぐ
        */
       terminalRef.current?.dispose()
     }
   }, [props.messages])
+
+  console.log(stateRef.current.files)
 
   const terminalOptions = {
     rows: 10,
