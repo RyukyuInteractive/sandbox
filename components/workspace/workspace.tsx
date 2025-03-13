@@ -1,9 +1,9 @@
 import { useChat } from "@ai-sdk/react"
-import { useQuery } from "@tanstack/react-query"
 import type { WebContainerProcess } from "@webcontainer/api"
 import type { SpawnOptions } from "@webcontainer/api"
 import { Terminal as XTerm } from "@xterm/xterm"
 import type { ITerminalInitOnlyOptions, ITerminalOptions } from "@xterm/xterm"
+import type { Message } from "ai"
 import { Code, Home, Send, Terminal } from "lucide-react"
 import type { editor } from "monaco-editor-core"
 import * as monaco from "monaco-editor-core"
@@ -31,6 +31,8 @@ import { writeFileTool } from "~/lib/tools/write-file-tool"
 import { cn } from "~/lib/utils"
 
 type Props = {
+  messages?: Message[]
+  prompt?: string
   roomId: string
 }
 
@@ -63,21 +65,11 @@ export function Workspace(props: Props) {
 
   const view = useViews()
 
-  const { data, isPending } = useQuery({
-    queryKey: ["message", props.roomId],
-    queryFn: async () => {
-      const res = await client.message[":roomId"].$get({
-        param: { roomId: props.roomId },
-      })
-
-      return await res.json()
-    },
-  })
-
   const chat = useChat({
     id: props.roomId,
     maxSteps: 128,
-    initialMessages: data,
+    initialInput: props.prompt,
+    initialMessages: props.messages,
     sendExtraMessageFields: true,
     async fetch(_, init) {
       if (typeof init?.body !== "string") throw new Error("init is undefined")
@@ -188,11 +180,11 @@ export function Workspace(props: Props) {
   })
 
   useEffect(() => {
-    if (isPending || !data) return
+    if (!props.messages) return
     /**
      * 前回のメッセージでのファイルの変更を反映する
      */
-    for (const message of data) {
+    for (const message of props.messages) {
       if (message.role !== "assistant") continue
       const toolInvocations = message.parts?.filter(
         (part) => part.type === "tool-invocation",
@@ -213,13 +205,14 @@ export function Workspace(props: Props) {
     }
 
     runDevContainer()
+
     return () => {
       /**
        * terminalが複数回生成されるのを防ぐ
        */
       terminalRef.current?.dispose()
     }
-  }, [isPending, data])
+  }, [props.messages])
 
   const terminalOptions = {
     rows: 10,

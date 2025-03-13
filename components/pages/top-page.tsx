@@ -1,7 +1,6 @@
 "use client"
-
-import { useQuery } from "@tanstack/react-query"
 import { generateId } from "ai"
+import type { Message } from "ai"
 import {
   ArrowRight,
   Clock,
@@ -19,32 +18,18 @@ import { Button } from "~/components/ui/button"
 import { Card } from "~/components/ui/card"
 import { Input } from "~/components/ui/input"
 import { LinkButtonComponent } from "~/components/ui/link-button"
-import { client } from "~/lib/client"
 
 type Props = {
-  onSubmit?: (message: string) => void
+  messageRooms: {
+    roomId: string
+    messages: Message[]
+  }[]
 }
 
 export function TopPage(props: Props) {
-  const [message, setMessage] = useState("")
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const mainRef = useRef<HTMLDivElement>(null)
   const roomId = useRef(generateId())
-
-  const { data } = useQuery({
-    queryKey: ["messages"],
-    queryFn: async () => {
-      const res = await client.messages.$get()
-
-      return await res.json()
-    },
-  })
-
-  const handleSubmit = () => {
-    if (props.onSubmit && message.trim()) {
-      props.onSubmit(message.trim())
-    }
-  }
 
   return (
     <div className="flex min-h-screen bg-gradient-to-b from-zinc-900 via-gray-900 to-black">
@@ -53,14 +38,14 @@ export function TopPage(props: Props) {
         className={`fixed top-0 left-0 z-40 h-screen w-72 transform border-zinc-800 border-r bg-black/50 backdrop-blur-sm transition-transform duration-300 ease-in-out ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} overflow-y-auto`}
       >
         <div className="sticky top-0 space-y-2 border-zinc-800 border-b bg-black/70 p-4 pt-16 backdrop-blur-sm">
-          <LinkButtonComponent
-            to="/$roomId"
-            params={{ roomId: roomId.current }}
+          <Button
+            type="submit"
+            form="new-room"
             className="w-full gap-2 bg-emerald-600 text-white hover:bg-emerald-700"
           >
             <PlusCircle className="h-5 w-5" />
             <span>チャットを新規作成</span>
-          </LinkButtonComponent>
+          </Button>
 
           <LinkButtonComponent
             to="/settings"
@@ -78,7 +63,7 @@ export function TopPage(props: Props) {
             <span>最近のチャット</span>
           </div>
           <div className="space-y-1">
-            {data?.map((item) => (
+            {props.messageRooms?.map((item) => (
               <LinkButtonComponent
                 to="/$roomId"
                 params={{ roomId: item.roomId }}
@@ -135,33 +120,28 @@ export function TopPage(props: Props) {
 
             <Card className="w-full max-w-3xl border-zinc-800 bg-black/30">
               <div className="p-6">
-                <div className="flex flex-col space-y-4">
+                <form
+                  method="GET"
+                  id="new-room"
+                  action={`/${roomId.current}`}
+                  className="flex flex-col space-y-4"
+                >
                   <div className="relative">
                     <MessageCircle className="-translate-y-1/2 absolute top-1/2 left-3 h-5 w-5 transform text-zinc-400" />
                     <Input
                       className="border-zinc-800 bg-zinc-900/80 pl-10 text-white placeholder:text-zinc-400"
                       placeholder="Webサイトの要件を入力してください..."
-                      value={message}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        setMessage(e.target.value)
-                      }
-                      onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                        if (e.key === "Enter") {
-                          handleSubmit()
-                        }
-                      }}
+                      name="prompt"
                     />
                   </div>
-                  <LinkButtonComponent
-                    to="/$roomId"
-                    params={{ roomId: roomId.current }}
+                  <Button
+                    type="submit"
                     className="group bg-emerald-600 py-6 text-lg text-white hover:bg-emerald-700"
-                    onClick={handleSubmit}
                   >
                     作成を開始する
                     <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                  </LinkButtonComponent>
-                </div>
+                  </Button>
+                </form>
               </div>
             </Card>
 
