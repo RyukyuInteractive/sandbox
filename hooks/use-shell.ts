@@ -1,6 +1,6 @@
 import type { WebContainer, WebContainerProcess } from "@webcontainer/api"
 import type { IDisposable, Terminal } from "@xterm/xterm"
-import { useCallback, useRef, useTransition } from "react"
+import { useCallback, useRef } from "react"
 
 type ShellState = {
   input: WritableStreamDefaultWriter<string> | null

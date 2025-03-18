@@ -9,7 +9,7 @@ import { useEffect, useRef, useState } from "react"
 import { Button } from "~/components/ui/button"
 import { Card } from "~/components/ui/card"
 import { Input } from "~/components/ui/input"
-import { LinkButtonComponent } from "~/components/ui/link-button"
+import { LinkButton } from "~/components/ui/link-button"
 import { Separator } from "~/components/ui/separator"
 import { ChatMessage } from "~/components/workspace/chat-message"
 import { FileTreeCard } from "~/components/workspace/file-tree-card"
@@ -373,14 +373,14 @@ export function Workspace(props: Props) {
             <Terminal className="h-4 w-4" />
           </Button>
           <div className="flex-1" />
-          <LinkButtonComponent
+          <LinkButton
             to="/"
             size="icon"
             variant="ghost"
             className="h-8 w-8 text-zinc-400 transition-all duration-200 hover:rotate-6 hover:scale-110 hover:text-emerald-300"
           >
             <Home className="h-4 w-4" />
-          </LinkButtonComponent>
+          </LinkButton>
         </div>
         <div className="relative flex flex-1 flex-col">
           <div className="h-full w-full overflow-hidden">

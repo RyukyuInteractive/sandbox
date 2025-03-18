@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "~/components/ui/card"
 import { Input } from "~/components/ui/input"
-import { LinkButtonComponent } from "~/components/ui/link-button"
+import { LinkButton } from "~/components/ui/link-button"
 import { Separator } from "~/components/ui/separator"
 import type { CredentialStorage } from "~/lib/credential-storage"
 
@@ -31,14 +31,14 @@ export function CredentialPage(props: Props) {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-gradient-to-b from-zinc-900 via-gray-900 to-black">
-      <LinkButtonComponent
+      <LinkButton
         to="/"
         size="icon"
         variant="ghost"
         className="absolute top-4 right-4 h-8 w-8 text-zinc-400 transition-all duration-200 hover:rotate-6 hover:scale-110 hover:text-emerald-300"
       >
         <Home className="h-4 w-4" />
-      </LinkButtonComponent>
+      </LinkButton>
       <Card className="w-full max-w-md border-zinc-800 bg-black/30 backdrop-blur-sm">
         <CardHeader className="space-y-4 p-6">
           <div className="flex items-center space-x-4">
