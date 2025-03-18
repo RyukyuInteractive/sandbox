@@ -8,6 +8,8 @@ export const hono = factory
   .createApp()
   .post("/", ...index.POST)
   .get("/projects", ...projects.GET)
-  .get("/projects/:project/messages", ...projects$project.GET)
+  .post("/projects", ...projects.POST)
+  .get("/projects/:project", ...projects$project.GET)
+  .put("/projects/:project", ...projects$project.PUT)
 
 export type AppType = typeof hono

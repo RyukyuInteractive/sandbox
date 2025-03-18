@@ -1,6 +1,5 @@
-import { useQuery } from "@tanstack/react-query"
-import { createFileRoute } from "@tanstack/react-router"
-import { generateId } from "ai"
+import { useMutation, useQuery } from "@tanstack/react-query"
+import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import {
   ArrowRight,
   Clock,
@@ -26,6 +25,8 @@ export const Route = createFileRoute("/")({
 })
 
 function RouteComponent() {
+  const navigate = useNavigate({ from: "/" })
+
   const result = useQuery<Project[]>({
     initialData: [],
     queryKey: [client.projects.$url()],
@@ -36,11 +37,36 @@ function RouteComponent() {
     },
   })
 
+  const createProject = useMutation({
+    mutationKey: ["projects"],
+    mutationFn: async () => {
+      const res = await client.projects.$post()
+      const json = await res.json()
+      return json
+    },
+  })
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
   const mainRef = useRef<HTMLDivElement>(null)
 
-  const roomId = useRef(generateId())
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    const formData = new FormData(e.currentTarget)
+
+    const prompt = formData.get("prompt")
+
+    const project = await createProject.mutateAsync()
+
+    navigate({
+      to: "/$project",
+      params: { project: project.id },
+      search: {
+        ...(typeof prompt === "string" && { prompt }),
+      },
+    })
+  }
 
   return (
     <div className="flex min-h-screen bg-gradient-to-b from-zinc-900 via-gray-900 to-black">
@@ -132,9 +158,8 @@ function RouteComponent() {
             <Card className="w-full max-w-3xl border-zinc-800 bg-black/30">
               <div className="p-6">
                 <form
-                  method="GET"
                   id="new-room"
-                  action={`/${roomId.current}`}
+                  onSubmit={handleSubmit}
                   className="flex flex-col space-y-4"
                 >
                   <div className="relative">

@@ -2,6 +2,7 @@ import { shikiToMonaco } from "@shikijs/monaco"
 import * as monaco from "monaco-editor-core"
 import { useEffect, useRef } from "react"
 import { createHighlighter } from "shiki/bundle/web"
+import { debounce } from "~/lib/debounce"
 
 type Props = {
   editorRef: React.MutableRefObject<monaco.editor.IStandaloneCodeEditor | null>
@@ -46,10 +47,12 @@ export function MonacoEditor(props: Props) {
       scrollBeyondLastLine: false,
     })
 
-    editor.onDidChangeModelContent(() => {
+    const handleChangeModalContent = debounce(() => {
       const value = editor.getValue()
       props.onChange(value)
-    })
+    }, 500)
+
+    editor.onDidChangeModelContent(handleChangeModalContent)
 
     props.editorRef.current = editor
   }
