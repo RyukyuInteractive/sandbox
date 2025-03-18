@@ -16,7 +16,7 @@ import { useRef, useState } from "react"
 import { Button } from "~/components/ui/button"
 import { Card } from "~/components/ui/card"
 import { Input } from "~/components/ui/input"
-import { LinkButtonComponent } from "~/components/ui/link-button"
+import { LinkButton } from "~/components/ui/link-button"
 import { client } from "~/lib/client"
 import type { Project } from "~/types/workspace"
 
@@ -84,14 +84,14 @@ function RouteComponent() {
             <span>チャットを新規作成</span>
           </Button>
 
-          <LinkButtonComponent
+          <LinkButton
             to="/settings"
             variant="ghost"
             className="w-full justify-center gap-2 text-zinc-300 hover:bg-zinc-800/50 hover:text-white"
           >
             <Shield className="h-5 w-5" />
             <span>APIキーの設定</span>
-          </LinkButtonComponent>
+          </LinkButton>
         </div>
 
         <nav className="space-y-4 p-4">
@@ -101,7 +101,7 @@ function RouteComponent() {
           </div>
           <div className="space-y-1">
             {result.data.map((item) => (
-              <LinkButtonComponent
+              <LinkButton
                 to="/$project"
                 params={{ project: item.id }}
                 key={item.id}
@@ -111,7 +111,7 @@ function RouteComponent() {
                 <span className="block w-full truncate text-left">
                   {item.messages.find(({ role }) => role === "user")?.content}
                 </span>
-              </LinkButtonComponent>
+              </LinkButton>
             ))}
           </div>
         </nav>

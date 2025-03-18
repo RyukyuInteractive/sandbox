@@ -17,6 +17,10 @@ export const GET = factory.createHandlers(async (c) => {
   const messages = await messageStorage.get<Message[]>(projectId)
   const files = await fileStorage.get<Record<string, string>>(projectId)
 
+  if (messages == null || files == null) {
+    throw new HTTPException(404, { message: "Project not found" })
+  }
+
   const project = {
     id: projectId,
     messages: messages ?? [],
@@ -40,6 +44,13 @@ export const PUT = factory.createHandlers(
 
     if (typeof projectId !== "string") {
       throw new HTTPException(400, { message: "Invalid project ID" })
+    }
+
+    if(
+      !(await messageStorage.has(projectId)) || 
+      !(await fileStorage.has(projectId))
+    ) {
+      throw new HTTPException(404, { message: "Project not found" })
     }
 
     await fileStorage.set(projectId, json.files)

@@ -19,8 +19,9 @@ export function useProject(projectId: string) {
         param: { project: projectId },
       })
 
-      if (response.status === 404) {
-        throw new Error("Project not found")
+      if (!response.ok) {
+        const text = await response.text()
+        throw new Error(text)
       }
 
       const json = await response.json()
