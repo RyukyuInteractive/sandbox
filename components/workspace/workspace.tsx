@@ -1,9 +1,7 @@
 import { useChat } from "@ai-sdk/react"
 import type { WebContainerProcess } from "@webcontainer/api"
-import type { SpawnOptions } from "@webcontainer/api"
 import { Terminal as XTerm } from "@xterm/xterm"
 import type { ITerminalInitOnlyOptions, ITerminalOptions } from "@xterm/xterm"
-import type { Message } from "ai"
 import { Code, Home, Send, Terminal } from "lucide-react"
 import type { editor } from "monaco-editor-core"
 import * as monaco from "monaco-editor-core"
@@ -17,12 +15,13 @@ import { ChatMessage } from "~/components/workspace/chat-message"
 import { FileTreeCard } from "~/components/workspace/file-tree-card"
 import { MonacoEditor } from "~/components/workspace/monaco-editor"
 import { useCredentialStorage } from "~/hooks/use-credential-storage"
+import { useProject } from "~/hooks/use-project"
+import { useShell } from "~/hooks/use-shell"
 import { useViews } from "~/hooks/use-views"
 import { useWebContainer } from "~/hooks/use-web-container"
 import { getCurrentAnnotation } from "~/lib/ai/get-current-annotation"
 import { toAnnotationMessage } from "~/lib/ai/to-annotation-message"
 import { client } from "~/lib/client"
-import { mainTemplate } from "~/lib/templates/main"
 import { toFileSystemTree } from "~/lib/to-file-system-tree"
 import { executeCommandTool } from "~/lib/tools/execute-command-tool"
 import { readFileTool } from "~/lib/tools/read-file-tool"
@@ -31,23 +30,24 @@ import { writeFileTool } from "~/lib/tools/write-file-tool"
 import { cn } from "~/lib/utils"
 
 type Props = {
-  messages?: Message[]
-  prompt?: string
   projectId: string
+  prompt?: string
 }
 
 export function Workspace(props: Props) {
   const stateRef = useRef<{
-    files: Record<string, string>
     currentFilePath: string
     isLocked: boolean
     devProcess: WebContainerProcess | null
+    isBusy: boolean
   }>({
-    files: structuredClone(mainTemplate),
     currentFilePath: "src/app.tsx",
     isLocked: false,
     devProcess: null,
+    isBusy: false,
   })
+
+  const project = useProject(props.projectId)
 
   const [credentialStorage] = useCredentialStorage()
 
@@ -61,15 +61,17 @@ export function Workspace(props: Props) {
 
   const terminalRef = useRef<XTerm>(null)
 
+  const shell = useShell()
+
   const terminalComponentRef = useRef<HTMLDivElement>(null)
 
   const view = useViews()
 
   const chat = useChat({
-    id: props.projectId,
+    id: project.data.id,
     maxSteps: 128,
     initialInput: props.prompt,
-    initialMessages: props.messages,
+    initialMessages: project.data.messages,
     sendExtraMessageFields: true,
     async fetch(_, init) {
       if (typeof init?.body !== "string") throw new Error("init is undefined")
@@ -80,7 +82,7 @@ export function Workspace(props: Props) {
         ...options,
         apiKey: credentialStorage.readApiKey(),
         template: "",
-        files: stateRef.current.files,
+        files: project.data.files,
       }
     },
     generateId() {
@@ -93,7 +95,7 @@ export function Workspace(props: Props) {
         const tool = readFileTool()
         const args = tool.parameters.parse(toolInvocation.toolCall.args)
         const filePath = args.path.replace("~", "src")
-        const content = stateRef.current.files[filePath] || null
+        const content = project.data.files[filePath] || null
         return {
           toolCallId: toolInvocation.toolCall.toolCallId,
           result: {
@@ -108,7 +110,7 @@ export function Workspace(props: Props) {
       if (toolInvocation.toolCall.toolName === "list_files") {
         // const tool = listFilesTool()
         // const args = tool.parameters.parse(toolInvocation.toolCall.args)
-        const files = Object.keys(stateRef.current.files)
+        const files = Object.keys(project.data.files)
         return {
           toolCallId: toolInvocation.toolCall.toolCallId,
           result: { files: files },
@@ -119,8 +121,8 @@ export function Workspace(props: Props) {
         const tool = searchFilesTool()
         const args = tool.parameters.parse(toolInvocation.toolCall.args)
         const regex = args.regex
-        const files = Object.keys(stateRef.current.files).filter((file) => {
-          return stateRef.current.files[file].match(new RegExp(regex))
+        const files = Object.keys(project.data.files).filter((file) => {
+          return project.data.files[file].match(new RegExp(regex))
         })
         return {
           toolCallId: toolInvocation.toolCall.toolCallId,
@@ -140,8 +142,6 @@ export function Workspace(props: Props) {
           stateRef.current.currentFilePath = args.path
           setCurrentFilePath(args.path)
         }
-        stateRef.current.files[filePath] = code
-        editorRef.current.setValue(code ?? "")
         const dir = filePath.split("/").slice(0, -1).join("/")
         await webContainer.fs.mkdir(dir, { recursive: true })
         await webContainer.fs.writeFile(filePath, code)
@@ -157,8 +157,8 @@ export function Workspace(props: Props) {
         const tool = executeCommandTool()
         const args = tool.parameters.parse(toolInvocation.toolCall.args)
         const command = args.command
-        const process = await webContainer.spawn(command)
-        await process.exit
+        await shell.exit()
+        await shell.exec(command)
         return {
           toolCallId: toolInvocation.toolCall.toolCallId,
           result: { ok: true },
@@ -167,8 +167,8 @@ export function Workspace(props: Props) {
     },
     async onFinish(message) {
       console.log("onFinish", message)
-      view.remove("EDITOR")
-      view.remove("TERMINAL")
+      // view.remove("EDITOR")
+      // view.remove("TERMINAL")
       stateRef.current.isLocked = false
     },
     onError(error) {
@@ -180,46 +180,16 @@ export function Workspace(props: Props) {
   })
 
   useEffect(() => {
-    if (!props.messages) return
-
-    /**
-     * 前回のメッセージでのファイルの変更を反映する
-     */
-    for (const message of props.messages) {
-      if (message.role !== "assistant") continue
-      const toolInvocations = message.parts?.filter(
-        (part) => part.type === "tool-invocation",
-      )
-
-      if (!toolInvocations) continue
-
-      for (const { toolInvocation } of toolInvocations) {
-        if (toolInvocation.toolName === "write_to_file") {
-          stateRef.current.files[toolInvocation.args.path] =
-            toolInvocation.args.content
-        }
-
-        /**
-         * @TODO editorのファイルを書き換えるいい方法が見つからない。。
-         */
-      }
-    }
-
     runDevContainer()
 
     return () => {
-      /**
-       * ファイルツリーの初期化
-       */
-      stateRef.current.files = mainTemplate
+      shell.kill()
       /**
        * terminalが複数回生成されるのを防ぐ
        */
       terminalRef.current?.dispose()
     }
-  }, [props.messages])
-
-  console.log(stateRef.current.files)
+  }, [shell.kill])
 
   const terminalOptions = {
     rows: 10,
@@ -229,13 +199,6 @@ export function Workspace(props: Props) {
     cursorBlink: true,
     cursorStyle: "underline",
   } satisfies ITerminalOptions & ITerminalInitOnlyOptions
-
-  const spawnOptions = {
-    terminal: {
-      cols: terminalOptions.cols,
-      rows: terminalOptions.rows,
-    },
-  } satisfies SpawnOptions
 
   /**
    * コンテナを起動する
@@ -249,48 +212,69 @@ export function Workspace(props: Props) {
       terminalRef.current.open(terminalComponentRef.current)
     }
 
-    const fileSystemTree = toFileSystemTree(stateRef.current.files)
+    const fileSystemTree = toFileSystemTree(project.data.files)
 
     await webContainer.mount(fileSystemTree)
-
-    const installProcess = await webContainer.spawn(
-      "npm",
-      ["install"],
-      spawnOptions,
-    )
-
-    installProcess.output.pipeTo(
-      new WritableStream({
-        write(data) {
-          terminalRef.current?.write(data)
-        },
-      }),
-    )
-
-    const exitCode = await installProcess.exit
-
-    if (exitCode !== 0) {
-      throw new Error("Installation failed")
-    }
-
-    stateRef.current.devProcess = await webContainer.spawn(
-      "npm",
-      ["run", "dev"],
-      spawnOptions,
-    )
-
-    stateRef.current.devProcess.output.pipeTo(
-      new WritableStream({
-        write(data) {
-          terminalRef.current?.write(data)
-        },
-      }),
-    )
 
     webContainer.on("server-ready", (port, url) => {
       if (iframeRef.current === null) return
       iframeRef.current.src = url
     })
+
+    webContainer.on("port", (port, type) => {
+      /**
+       * serverを修了した際に、websocketによる通信を切断する
+       */
+      if (iframeRef.current && type === "close") {
+        iframeRef.current.src = ""
+      }
+    })
+
+    const handleWatch =
+      (base: string) =>
+      async (
+        event: "rename" | "change",
+        path: string | Uint8Array<ArrayBufferLike>,
+      ) => {
+        if (event !== "change" || typeof path !== "string") return
+        const prevVersion = editorRef.current?.getModel()?.getVersionId()
+        const realPath = `${base}${path}`
+        const file = await webContainer.fs.readFile(realPath)
+        const content = new TextDecoder().decode(file)
+        await project.update({
+          files: {
+            [realPath]: content,
+          },
+        })
+        const currentVersion = editorRef.current?.getModel()?.getVersionId()
+        if (
+          stateRef.current.currentFilePath === realPath &&
+          prevVersion === currentVersion &&
+          content !== editorRef.current?.getValue()
+        ) {
+          editorRef.current?.setValue(content)
+        }
+      }
+
+    /**
+     * webContainerのファイルの変更を監視しファイルツリーを更新する
+     */
+    webContainer.fs.watch("/", handleWatch(""))
+    webContainer.fs.watch(
+      "/src",
+      {
+        recursive: true,
+      },
+      handleWatch("src/"),
+    )
+
+    await shell.init(webContainer, terminalRef.current)
+
+    await shell.exec("ls")
+
+    await shell.exec("npm install")
+
+    await shell.exec("npm run dev")
   }
 
   /**
@@ -299,18 +283,18 @@ export function Workspace(props: Props) {
    */
   const onChangeEditorValue = async (value: string) => {
     if (stateRef.current.isLocked) return
-    stateRef.current.files[stateRef.current.currentFilePath] = value
     await webContainer.fs.writeFile(stateRef.current.currentFilePath, value)
   }
 
   /**
    * ファイルを選択する
    */
-  const onSelectFile = (path: string) => {
+  const onSelectFile = async (path: string) => {
     stateRef.current.currentFilePath = path
     setCurrentFilePath(path)
     const extension = path.split(".").pop()
-    const content = stateRef.current.files[path] || ""
+    const file = await webContainer.fs.readFile(path)
+    const content = new TextDecoder().decode(file)
     const newModel = monaco.editor.createModel(content, extension)
     editorRef.current?.setModel(newModel)
   }
@@ -360,10 +344,7 @@ export function Workspace(props: Props) {
             </ul>
           </div>
         </Card>
-        <FileTreeCard
-          files={stateRef.current.files}
-          onSelectFile={onSelectFile}
-        />
+        <FileTreeCard files={project.data.files} onSelectFile={onSelectFile} />
       </aside>
       <main className="flex flex-1 flex-col gap-y-4 p-4">
         <div className="flex gap-x-4">
@@ -420,7 +401,9 @@ export function Workspace(props: Props) {
             <Card className="h-full w-full overflow-hidden border-zinc-800 bg-black/50">
               <MonacoEditor
                 className="h-full w-full"
-                initialValue={stateRef.current.files[currentFilePath]}
+                initialValue={
+                  project.data.files[stateRef.current.currentFilePath]
+                }
                 editorRef={editorRef}
                 onChange={onChangeEditorValue}
               />
