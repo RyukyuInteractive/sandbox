@@ -1,6 +1,6 @@
 import type { WebContainer, WebContainerProcess } from "@webcontainer/api"
 import type { IDisposable, Terminal } from "@xterm/xterm"
-import { useCallback, useRef } from "react"
+import { useCallback, useRef, useTransition } from "react"
 
 type ShellState = {
   input: WritableStreamDefaultWriter<string> | null
@@ -8,6 +8,7 @@ type ShellState = {
   disposable: IDisposable | null
   outputStream: ReadableStreamDefaultReader<string> | null
   isInitialized: boolean
+  isProcessing: boolean
 }
 
 type ExecResult = {
@@ -22,6 +23,7 @@ export function useShell() {
     disposable: null,
     outputStream: null,
     isInitialized: false,
+    isProcessing: false,
   })
 
   /**
@@ -32,7 +34,18 @@ export function useShell() {
       return { output: "", exitCode: 1 }
     }
 
-    stateRef.current.input.write(`${command}\n`)
+    await stateRef.current.input.write(`${command}\n`)
+    return waitTillOscCode("exit")
+  }
+
+  /**
+   * シェルで実行中のプロセス終了
+   */
+  const exit = async () => {
+    if (!stateRef.current.isProcessing) {
+      return
+    }
+    await stateRef.current.input?.write("\x03")
     return waitTillOscCode("exit")
   }
 
@@ -48,6 +61,8 @@ export function useShell() {
     }
 
     const tappedStream = stateRef.current.outputStream
+
+    stateRef.current.isProcessing = true
 
     while (true) {
       const { value, done } = await tappedStream.read()
@@ -83,6 +98,8 @@ export function useShell() {
         break
       }
     }
+
+    stateRef.current.isProcessing = false
 
     return { output: fullOutput, exitCode }
   }
@@ -138,6 +155,7 @@ export function useShell() {
       disposable,
       outputStream,
       isInitialized: true,
+      isProcessing: false,
     }
 
     return ready.promise
@@ -161,11 +179,13 @@ export function useShell() {
       disposable: null,
       outputStream: null,
       isInitialized: false,
+      isProcessing: false,
     }
   }, [])
 
   return {
     exec,
+    exit,
     kill,
     init,
     isInitialized: stateRef.current.isInitialized,

@@ -157,8 +157,8 @@ export function Workspace(props: Props) {
         const tool = executeCommandTool()
         const args = tool.parameters.parse(toolInvocation.toolCall.args)
         const command = args.command
-        const process = await webContainer.spawn(command)
-        await process.exit
+        await shell.exit()
+        await shell.exec(command)
         return {
           toolCallId: toolInvocation.toolCall.toolCallId,
           result: { ok: true },
@@ -167,8 +167,8 @@ export function Workspace(props: Props) {
     },
     async onFinish(message) {
       console.log("onFinish", message)
-      view.remove("EDITOR")
-      view.remove("TERMINAL")
+      // view.remove("EDITOR")
+      // view.remove("TERMINAL")
       stateRef.current.isLocked = false
     },
     onError(error) {
