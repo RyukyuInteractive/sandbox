@@ -8,7 +8,6 @@ type ShellState = {
   disposable: IDisposable | null
   outputStream: ReadableStreamDefaultReader<string> | null
   isInitialized: boolean
-  isProcessing: boolean
 }
 
 type ExecResult = {
@@ -23,8 +22,25 @@ export function useShell() {
     disposable: null,
     outputStream: null,
     isInitialized: false,
-    isProcessing: false,
   })
+
+  const parseSequence = (text: string) => {
+    const escStart = String.fromCharCode(0x1b) // ESC文字
+    const bell = String.fromCharCode(0x07) // BELL文字
+    const pattern = new RegExp(
+      `${escStart}]654;([^${bell}=]+)=?((-?\\d+):(\\d+))?${bell}`,
+    )
+    /**
+     * 最後に以下のような出力がされる
+     * \x1B]654;exit=-1:0\x07
+     *
+     * この出力をパースしてコマンドと終了コードを取得する
+     * command: exit
+     * code: 0
+     */
+    const [, command, , , code] = text.match(pattern) || []
+    return { command, code }
+  }
 
   /**
    * シェルにコマンドを実行
@@ -42,11 +58,13 @@ export function useShell() {
    * シェルで実行中のプロセス終了
    */
   const exit = async () => {
-    if (!stateRef.current.isProcessing) {
-      return
+    if (!stateRef.current.input) {
+      return { output: "", exitCode: 1 }
     }
-    await stateRef.current.input?.write("\x03")
-    return waitTillOscCode("exit")
+
+    const ext = String.fromCharCode(0x03) // ETX文字
+    await stateRef.current.input?.write(ext)
+    return waitTillOscCode("prompt")
   }
 
   /**
@@ -62,8 +80,6 @@ export function useShell() {
 
     const tappedStream = stateRef.current.outputStream
 
-    stateRef.current.isProcessing = true
-
     while (true) {
       const { value, done } = await tappedStream.read()
 
@@ -74,21 +90,7 @@ export function useShell() {
       const text = value || ""
       fullOutput += text
 
-      const escStart = String.fromCharCode(0x1b) // ESC文字
-      const bell = String.fromCharCode(0x07) // BELL文字
-      const pattern = new RegExp(
-        `${escStart}]654;([^${bell}=]+)=?((-?\\d+):(\\d+))?${bell}`,
-      )
-
-      /**
-       * 最後に以下のような出力がされる
-       * \x1B]654;exit=-1:0\x07
-       *
-       * この出力をパースしてコマンドと終了コードを取得する
-       * command: exit
-       * code: 0
-       */
-      const [, command, , , code] = text.match(pattern) || []
+      const { command, code } = parseSequence(text)
 
       if (command === "exit") {
         exitCode = Number.parseInt(code, 10)
@@ -98,8 +100,6 @@ export function useShell() {
         break
       }
     }
-
-    stateRef.current.isProcessing = false
 
     return { output: fullOutput, exitCode }
   }
@@ -132,7 +132,8 @@ export function useShell() {
     terminalOutput.pipeTo(
       new WritableStream({
         write: async (data) => {
-          if (!isInteractive) {
+          const { command } = parseSequence(data)
+          if (command === "interactive") {
             isInteractive = true
             ready.resolve()
           }
@@ -155,7 +156,6 @@ export function useShell() {
       disposable,
       outputStream,
       isInitialized: true,
-      isProcessing: false,
     }
 
     return ready.promise
@@ -179,7 +179,6 @@ export function useShell() {
       disposable: null,
       outputStream: null,
       isInitialized: false,
-      isProcessing: false,
     }
   }, [])
 
