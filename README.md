@@ -15,6 +15,12 @@
 % cp .env .env.local
 ```
 
+エディタのルールを生成する。
+
+```
+% bun run predev
+```
+
 ## メモ
 
 https://github.com/tailwindlabs/tailwindcss/issues/13133

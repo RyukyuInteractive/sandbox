@@ -1,0 +1,4 @@
+path,name,description,is_deprecated,deprecated_reason,file
+"$project","プロジェクト","",false,"","routes/$project.tsx"
+"index","ホーム","プロンプトを入力してプロジェクトを作成する",false,"","routes/index.tsx"
+"settings","設定","",false,"","routes/settings.tsx"

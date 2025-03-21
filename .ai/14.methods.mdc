@@ -1,0 +1,10 @@
+---
+description: 実装のパターン
+globs:
+alwaysApply: true
+---
+# 実装のパターン
+
+## ページを追加する
+
+- `routes/*.tsx` - ページ

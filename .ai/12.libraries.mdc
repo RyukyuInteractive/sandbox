@@ -1,0 +1,8 @@
+---
+description: ライブラリ
+globs:
+alwaysApply: true
+---
+# ライブラリ
+
+- `hono` - Hono
