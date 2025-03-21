@@ -236,7 +236,7 @@ export function Workspace(props: Props) {
         event: "rename" | "change",
         path: string | Uint8Array<ArrayBufferLike>,
       ) => {
-        if (event !== "change" || typeof path !== "string") return
+        if (typeof path !== "string") return
         const prevVersion = editorRef.current?.getModel()?.getVersionId()
         const realPath = `${base}${path}`
         const file = await webContainer.fs.readFile(realPath)
@@ -272,9 +272,7 @@ export function Workspace(props: Props) {
 
     await shell.exec("ls")
 
-    await shell.exec("npm install")
-
-    await shell.exec("npm run dev")
+    await shell.exec("npm install && npm run dev")
   }
 
   /**
