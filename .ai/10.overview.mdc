@@ -1,3 +1,9 @@
+---
+description: プロジェクト概要
+globs:
+alwaysApply: true
+---
+
 # Sandbox プロジェクト概要
 
 ## プロジェクトの目的
