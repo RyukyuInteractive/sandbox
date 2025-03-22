@@ -4,13 +4,14 @@
     "*.css": "tailwindcss",
     "*.json": "json",
     "*.vars": "dotenv",
-    "*.vars.template": "dotenv"
+    "*.vars.template": "dotenv",
+    "*.mdc": "markdown"
   },
   "files.watcherExclude": {
-    "**/routeTree.gen.ts": true
+    "**/route-tree.gen.ts": true
   },
   "files.readonlyInclude": {
-    "**/routeTree.gen.ts": true
+    "**/route-tree.gen.ts": true
   },
   "files.exclude": {
     ".wrangler": true,
