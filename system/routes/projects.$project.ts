@@ -46,8 +46,8 @@ export const PUT = factory.createHandlers(
       throw new HTTPException(400, { message: "Invalid project ID" })
     }
 
-    if(
-      !(await messageStorage.has(projectId)) || 
+    if (
+      !(await messageStorage.has(projectId)) ||
       !(await fileStorage.has(projectId))
     ) {
       throw new HTTPException(404, { message: "Project not found" })

@@ -27,6 +27,7 @@ async function initWebContainer(): Promise<WebContainer> {
 
   const container = await WebContainer.boot({
     coep: "credentialless",
+    workdirName: "projects",
   })
 
   webContainer = container

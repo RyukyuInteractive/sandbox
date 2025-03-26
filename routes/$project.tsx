@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod"
-import { Workspace } from "~/components/workspace/workspace"
 import { ErrorPage } from "~/components/pages/error-page"
+import { Workspace } from "~/components/workspace/workspace"
 
 const searchSchema = z.object({
   prompt: z.string().optional(),

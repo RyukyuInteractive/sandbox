@@ -4,6 +4,7 @@ import { toFileSystemTree } from "~/lib/to-file-system-tree"
 
 type Props = {
   files: Record<string, string>
+  preSaveFiles: Record<string, string>
   onSelectFile(path: string): void
 }
 
@@ -12,6 +13,7 @@ export function FileTreeCard(props: Props) {
     <Card className="w-full flex-1 overflow-hidden rounded-xl border-zinc-800 bg-black/20">
       <div className="h-full overflow-y-auto p-4 text-zinc-300">
         <FileTreeItem
+          preSaveFile={toFileSystemTree(props.preSaveFiles)}
           file={toFileSystemTree(props.files)}
           onClick={props.onSelectFile}
         />

@@ -2,7 +2,7 @@ import { useChat } from "@ai-sdk/react"
 import type { WebContainerProcess } from "@webcontainer/api"
 import { Terminal as XTerm } from "@xterm/xterm"
 import type { ITerminalInitOnlyOptions, ITerminalOptions } from "@xterm/xterm"
-import { Code, Home, Send, Terminal } from "lucide-react"
+import { Code, Download, Home, Send, Terminal } from "lucide-react"
 import type { editor } from "monaco-editor-core"
 import * as monaco from "monaco-editor-core"
 import { useEffect, useRef, useState } from "react"
@@ -22,6 +22,7 @@ import { useWebContainer } from "~/hooks/use-web-container"
 import { getCurrentAnnotation } from "~/lib/ai/get-current-annotation"
 import { toAnnotationMessage } from "~/lib/ai/to-annotation-message"
 import { client } from "~/lib/client"
+import { getExtname } from "~/lib/getExtname"
 import { toFileSystemTree } from "~/lib/to-file-system-tree"
 import { executeCommandTool } from "~/lib/tools/execute-command-tool"
 import { readFileTool } from "~/lib/tools/read-file-tool"
@@ -142,6 +143,7 @@ export function Workspace(props: Props) {
           stateRef.current.currentFilePath = args.path
           setCurrentFilePath(args.path)
         }
+        view.push("EDITOR")
         const dir = filePath.split("/").slice(0, -1).join("/")
         await webContainer.fs.mkdir(dir, { recursive: true })
         await webContainer.fs.writeFile(filePath, code)
@@ -192,10 +194,10 @@ export function Workspace(props: Props) {
   }, [shell.kill])
 
   const terminalOptions = {
-    rows: 10,
+    rows: 12,
     fontSize: 12,
     lineHeight: 1.2,
-    cols: 300,
+    cols: 50,
     cursorBlink: true,
     cursorStyle: "underline",
   } satisfies ITerminalOptions & ITerminalInitOnlyOptions
@@ -237,22 +239,19 @@ export function Workspace(props: Props) {
         path: string | Uint8Array<ArrayBufferLike>,
       ) => {
         if (typeof path !== "string") return
-        const prevVersion = editorRef.current?.getModel()?.getVersionId()
         const realPath = `${base}${path}`
+        if (getExtname(realPath) === "") return
         const file = await webContainer.fs.readFile(realPath)
         const content = new TextDecoder().decode(file)
-        await project.update({
-          files: {
-            [realPath]: content,
-          },
+        await project.save({
+          [realPath]: content,
         })
-        const currentVersion = editorRef.current?.getModel()?.getVersionId()
-        if (
-          stateRef.current.currentFilePath === realPath &&
-          prevVersion === currentVersion &&
-          content !== editorRef.current?.getValue()
-        ) {
+
+        if (stateRef.current.currentFilePath === realPath) {
+          const currentPosition = editorRef.current?.getPosition()
           editorRef.current?.setValue(content)
+          if (!currentPosition) return
+          editorRef.current?.setPosition(currentPosition)
         }
       }
 
@@ -279,9 +278,27 @@ export function Workspace(props: Props) {
    * エディタの編集を修正する
    * ファイルの変更時には呼び出されない
    */
-  const onChangeEditorValue = async (value: string) => {
+  const onChangeEditorValue = (value: string) => {
     if (stateRef.current.isLocked) return
-    await webContainer.fs.writeFile(stateRef.current.currentFilePath, value)
+    project.preSave({
+      [stateRef.current.currentFilePath]: value,
+    })
+  }
+
+  /**
+   * ソースコードのダウンロードをする
+   */
+  const onDownLoad = async () => {
+    const data = await webContainer.export(webContainer.workdir, {
+      format: "zip",
+      excludes: ["node_modules"],
+    })
+    const zip = new Blob([data])
+    const uri = URL.createObjectURL(zip)
+    const link = document.createElement("a")
+    link.download = "sample.zip"
+    link.href = uri
+    link.click()
   }
 
   /**
@@ -289,11 +306,14 @@ export function Workspace(props: Props) {
    */
   const onSelectFile = async (path: string) => {
     stateRef.current.currentFilePath = path
+    view.push("EDITOR")
     setCurrentFilePath(path)
-    const extension = path.split(".").pop()
-    const file = await webContainer.fs.readFile(path)
-    const content = new TextDecoder().decode(file)
-    const newModel = monaco.editor.createModel(content, extension)
+    let content = project.preSaveData.files[path]
+    if (!content) {
+      const file = await webContainer.fs.readFile(path)
+      content = new TextDecoder().decode(file)
+    }
+    const newModel = monaco.editor.createModel(content, getExtname(path))
     editorRef.current?.setModel(newModel)
   }
 
@@ -305,6 +325,15 @@ export function Workspace(props: Props) {
     view.push("EDITOR")
     view.push("TERMINAL")
     return chat.handleSubmit(event)
+  }
+
+  /**
+   * コードを保存する
+   */
+  const onSave = async () => {
+    const content = project.preSaveData.files[currentFilePath]
+    if (!content) return
+    await webContainer.fs.writeFile(currentFilePath, content)
   }
 
   const annotation = getCurrentAnnotation(chat.messages)
@@ -342,7 +371,11 @@ export function Workspace(props: Props) {
             </ul>
           </div>
         </Card>
-        <FileTreeCard files={project.data.files} onSelectFile={onSelectFile} />
+        <FileTreeCard
+          preSaveFiles={project.preSaveData.files}
+          files={project.data.files}
+          onSelectFile={onSelectFile}
+        />
       </aside>
       <main className="flex flex-1 flex-col gap-y-4 p-4">
         <div className="flex gap-x-4">
@@ -371,6 +404,14 @@ export function Workspace(props: Props) {
             <Terminal className="h-4 w-4" />
           </Button>
           <div className="flex-1" />
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8 text-zinc-400 transition-all duration-200 hover:rotate-6 hover:scale-110 hover:text-emerald-300"
+            onClick={onDownLoad}
+          >
+            <Download className="h-4 w-4" />
+          </Button>
           <LinkButton
             to="/"
             size="icon"
@@ -404,6 +445,11 @@ export function Workspace(props: Props) {
                 }
                 editorRef={editorRef}
                 onChange={onChangeEditorValue}
+                isShowSaveButton={Object.keys(
+                  project.preSaveData.files,
+                ).includes(currentFilePath)}
+                fileName={currentFilePath}
+                onSave={onSave}
               />
             </Card>
           </div>

@@ -7,6 +7,8 @@ import { z } from "zod"
 export function executeCommandTool() {
   return tool({
     description: "ターミナルでコマンドを実行する",
-    parameters: z.object({ command: z.string().describe("実行するコマンド (例 npm install axios") }),
+    parameters: z.object({
+      command: z.string().describe("実行するコマンド (例 npm install axios"),
+    }),
   })
 }
