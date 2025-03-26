@@ -109,7 +109,8 @@ function RouteComponent() {
                 className="w-full justify-start overflow-hidden text-sm text-zinc-300 hover:text-white"
               >
                 <span className="block w-full truncate text-left">
-                  {item.messages.find(({ role }) => role === "user")?.content ?? '新しいチャット'}
+                  {item.messages.find(({ role }) => role === "user")?.content ??
+                    "新しいチャット"}
                 </span>
               </LinkButton>
             ))}
