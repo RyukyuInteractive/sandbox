@@ -5,11 +5,11 @@ import { LinkButton } from "~/components/ui/link-button"
 
 export function ErrorPage(props: ErrorComponentProps) {
   return (
-    <div className="flex min-h-screen bg-gradient-to-b from-zinc-900 via-gray-900 to-black">
+    <div className="flex min-h-screen bg-zinc-900">
       <main className="min-h-screen flex-1">
         <div className="container mx-auto px-4 py-8">
           <div className="flex min-h-[80vh] flex-col items-center justify-center text-center">
-            <Card className="w-full max-w-3xl border-zinc-800 bg-black/30">
+            <Card className="w-full max-w-3xl border-zinc-800 bg-black">
               <div className="space-y-6 p-6">
                 <div className="flex justify-center">
                   <AlertTriangle className="h-16 w-16 text-red-500" />

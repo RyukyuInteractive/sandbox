@@ -69,12 +69,12 @@ function RouteComponent() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-b from-zinc-900 via-gray-900 to-black">
+    <div className="flex min-h-screen bg-zinc-900">
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-40 h-screen w-72 transform border-zinc-800 border-r bg-black/50 backdrop-blur-sm transition-transform duration-300 ease-in-out ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} overflow-y-auto`}
+        className={`fixed top-0 left-0 z-40 h-screen w-72 transform border-zinc-800 border-r bg-black backdrop-blur-sm transition-transform duration-300 ease-in-out ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} overflow-y-auto`}
       >
-        <div className="sticky top-0 space-y-2 border-zinc-800 border-b bg-black/70 p-4 pt-16 backdrop-blur-sm">
+        <div className="sticky top-0 space-y-2 border-zinc-800 border-b bg-black p-4 pt-16 backdrop-blur-sm">
           <Button
             type="submit"
             form="new-room"
@@ -140,23 +140,15 @@ function RouteComponent() {
       >
         <div className="container mx-auto px-4 py-8">
           <div className="flex min-h-[80vh] flex-col items-center justify-center text-center">
-            <h1 className="group relative mb-6 font-black text-7xl">
-              <span className="-top-1 -left-1 absolute animate-pulse text-emerald-500/50 blur-[2px]">
-                sandbox
-              </span>
-              <span className="-top-0.5 -left-0.5 absolute text-purple-400/50 blur-[1px] transition-colors duration-300 group-hover:text-rose-400/50">
-                sandbox
-              </span>
-              <span className="relative cursor-default bg-gradient-to-r from-zinc-100 to-white bg-clip-text text-transparent transition-all duration-300 group-hover:from-emerald-200 group-hover:to-white">
-                sandbox
-              </span>
+            <h1 className="relative mb-6 font-black text-7xl text-white">
+              sandbox
             </h1>
             <p className="mb-12 max-w-2xl text-xl text-zinc-300">
               あなたの要件を入力するだけで、AIがWebサイトを作成します。
               プログラミングの知識は必要ありません。
             </p>
 
-            <Card className="w-full max-w-3xl border-zinc-800 bg-black/30">
+            <Card className="w-full max-w-3xl border-zinc-800 bg-black">
               <div className="p-6">
                 <form
                   id="new-room"

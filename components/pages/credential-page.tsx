@@ -30,29 +30,24 @@ export function CredentialPage(props: Props) {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-gradient-to-b from-zinc-900 via-gray-900 to-black">
+    <div className="relative flex min-h-screen items-center justify-center bg-zinc-900">
       <LinkButton
         to="/"
         size="icon"
         variant="ghost"
-        className="absolute top-4 right-4 h-8 w-8 text-zinc-400 transition-all duration-200 hover:rotate-6 hover:scale-110 hover:text-emerald-300"
+        className="absolute top-4 right-4 h-8 w-8 text-zinc-400 hover:text-emerald-300"
       >
         <Home className="h-4 w-4" />
       </LinkButton>
-      <Card className="w-full max-w-md border-zinc-800 bg-black/30 backdrop-blur-sm">
+      <Card className="w-full max-w-md border-zinc-800 bg-black backdrop-blur-sm">
         <CardHeader className="space-y-4 p-6">
           <div className="flex items-center space-x-4">
             <div className="rounded-full bg-emerald-500/10 p-2">
               <Shield className="h-6 w-6 text-emerald-500" />
             </div>
             <div>
-              <CardTitle className="group relative text-2xl">
-                <span className="-top-1 -left-1 absolute animate-pulse text-emerald-500/50 blur-[2px]">
-                  API Key Setup
-                </span>
-                <span className="relative bg-gradient-to-r from-zinc-100 to-white bg-clip-text text-transparent">
-                  API Key Setup
-                </span>
+              <CardTitle className="text-2xl text-white">
+                API Key Setup
               </CardTitle>
               <CardDescription className="mt-2 text-zinc-400">
                 環境変数にAPIキーが設定されていません。

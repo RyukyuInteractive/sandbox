@@ -339,9 +339,9 @@ export function Workspace(props: Props) {
   const annotation = getCurrentAnnotation(chat.messages)
 
   return (
-    <div className="flex h-svh w-full bg-gradient-to-b from-zinc-900 via-gray-900 to-black">
+    <div className="flex h-svh w-full bg-zinc-900">
       <aside className="flex h-full w-96 min-w-96 flex-col gap-y-4 px-3 py-4">
-        <Card className="h-1/2 w-full overflow-hidden rounded-xl border-zinc-800 bg-black/20">
+        <Card className="h-1/2 w-full overflow-hidden rounded-xl border-zinc-800 bg-black">
           <div className="scrollbar-thin scrollbar-track-zinc-900 scrollbar-thumb-zinc-700 flex h-full flex-col overflow-hidden">
             <form className="flex gap-x-2 p-4" onSubmit={onSubmit}>
               <Input
@@ -353,7 +353,7 @@ export function Workspace(props: Props) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-emerald-400 transition-all hover:rotate-[-15deg] hover:scale-110 hover:bg-emerald-500/10 hover:text-emerald-300 active:scale-90"
+                className="h-8 w-8 text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300 active:scale-90"
               >
                 <Send className="h-6 w-6" />
               </Button>
@@ -383,9 +383,9 @@ export function Workspace(props: Props) {
             size="icon"
             variant="ghost"
             className={cn(
-              "h-8 w-8 text-zinc-400 transition-all duration-200 hover:rotate-6 hover:scale-110",
+              "h-8 w-8 text-zinc-400 hover:text-zinc-300",
               view.state.includes("EDITOR") &&
-                "bg-emerald-500/10 text-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.3)] hover:text-emerald-300",
+                "bg-emerald-500/10 text-emerald-400 hover:text-emerald-300",
             )}
             onClick={view.toggle("EDITOR")}
           >
@@ -395,9 +395,9 @@ export function Workspace(props: Props) {
             size="icon"
             variant="ghost"
             className={cn(
-              "hover:-rotate-6 h-8 w-8 text-zinc-400 transition-all duration-200 hover:scale-110",
+              "h-8 w-8 text-zinc-400 hover:text-zinc-300",
               view.state.includes("TERMINAL") &&
-                "bg-emerald-500/10 text-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.3)] hover:text-emerald-300",
+                "bg-emerald-500/10 text-emerald-400 hover:text-emerald-300",
             )}
             onClick={view.toggle("TERMINAL")}
           >
@@ -407,7 +407,7 @@ export function Workspace(props: Props) {
           <Button
             size="icon"
             variant="ghost"
-            className="h-8 w-8 text-zinc-400 transition-all duration-200 hover:rotate-6 hover:scale-110 hover:text-emerald-300"
+            className="h-8 w-8 text-zinc-400 hover:text-emerald-300"
             onClick={onDownLoad}
           >
             <Download className="h-4 w-4" />
@@ -416,14 +416,14 @@ export function Workspace(props: Props) {
             to="/"
             size="icon"
             variant="ghost"
-            className="h-8 w-8 text-zinc-400 transition-all duration-200 hover:rotate-6 hover:scale-110 hover:text-emerald-300"
+            className="h-8 w-8 text-zinc-400 hover:text-emerald-300"
           >
             <Home className="h-4 w-4" />
           </LinkButton>
         </div>
         <div className="relative flex flex-1 flex-col">
           <div className="h-full w-full overflow-hidden">
-            <Card className="h-full w-full overflow-hidden border-zinc-800 bg-black/30">
+            <Card className="h-full w-full overflow-hidden border-zinc-800 bg-black">
               <iframe
                 allow="cross-origin-isolated"
                 className="h-full w-full flex-1"
@@ -437,7 +437,7 @@ export function Workspace(props: Props) {
               hidden: !view.state.includes("EDITOR"),
             })}
           >
-            <Card className="h-full w-full overflow-hidden border-zinc-800 bg-black/50">
+            <Card className="h-full w-full overflow-hidden border-zinc-800 bg-black">
               <MonacoEditor
                 className="h-full w-full"
                 initialValue={
@@ -458,7 +458,7 @@ export function Workspace(props: Props) {
               hidden: !view.state.includes("TERMINAL"),
             })}
           >
-            <Card className="overflow-hidden border-zinc-800 bg-black p-2 ">
+            <Card className="overflow-hidden border-zinc-800 bg-black p-2">
               <div
                 className="h-full w-full overflow-x-hidden"
                 ref={terminalComponentRef}
