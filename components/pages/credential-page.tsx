@@ -40,7 +40,7 @@ export function CredentialPage(props: Props) {
         <Home className="h-4 w-4" />
       </LinkButton>
       <Card className="w-full max-w-md border-zinc-800 bg-black backdrop-blur-sm">
-        <CardHeader className="space-y-4 p-2">
+        <CardHeader className="space-y-4 p-4">
           <div className="flex items-center space-x-4">
             <div className="rounded-full bg-emerald-500/10 p-2">
               <Shield className="h-6 w-6 text-emerald-500" />
@@ -57,7 +57,7 @@ export function CredentialPage(props: Props) {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4 p-2">
+        <CardContent className="space-y-4 p-4">
           <form
             onSubmit={(e) => {
               e.preventDefault()
@@ -84,7 +84,7 @@ export function CredentialPage(props: Props) {
           </form>
         </CardContent>
         <Separator className="bg-zinc-800" />
-        <CardContent className="space-y-4 p-2">
+        <CardContent className="space-y-4 p-4">
           <div className="flex items-start space-x-4">
             <Info className="h-5 w-5 flex-shrink-0 text-zinc-400" />
             <p className="text-sm text-zinc-400">

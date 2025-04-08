@@ -149,7 +149,7 @@ function RouteComponent() {
             </p>
 
             <Card className="w-full max-w-3xl border-zinc-800 bg-black">
-              <div className="p-2">
+              <div className="p-4">
                 <form
                   id="new-room"
                   onSubmit={handleSubmit}

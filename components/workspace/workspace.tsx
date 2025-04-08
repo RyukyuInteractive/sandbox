@@ -341,7 +341,7 @@ export function Workspace(props: Props) {
   return (
     <div className="flex h-svh w-full bg-zinc-900">
       <aside className="flex h-full w-96 min-w-96 flex-col gap-2 p-2">
-        <Card className="h-1/2 w-full overflow-hidden rounded-xl border-zinc-800 bg-black">
+        <Card className="h-1/2 w-full overflow-hidden rounded-xl border-zinc-800 bg-black p-4">
           <div className="scrollbar-thin scrollbar-track-zinc-900 scrollbar-thumb-zinc-700 flex h-full flex-col overflow-hidden">
             <form className="flex gap-2 p-2" onSubmit={onSubmit}>
               <Input
@@ -359,13 +359,17 @@ export function Workspace(props: Props) {
               </Button>
             </form>
             <Separator className="bg-zinc-800" />
-            <ul className="space-y-2 overflow-y-auto p-2 text-zinc-300">
+            <ul className="space-y-2 overflow-y-auto p-2 text-zinc-300" ref={(el) => {
+                if (el) {
+                  el.scrollTop = el.scrollHeight;
+                }
+              }}>
               {chat.status !== "ready" && (
                 <li>
                   <p className="text-xs">{toAnnotationMessage(annotation)}</p>
                 </li>
               )}
-              {chat.messages?.toReversed().map((message) => (
+              {chat.messages?.map((message) => (
                 <ChatMessage key={message.id} message={message} />
               ))}
             </ul>
@@ -423,7 +427,7 @@ export function Workspace(props: Props) {
         </div>
         <div className="relative flex flex-1 flex-col">
           <div className="h-full w-full overflow-hidden">
-            <Card className="h-full w-full overflow-hidden border-zinc-800 bg-black">
+            <Card className="h-full w-full overflow-hidden border-zinc-800 bg-black p-4">
               <iframe
                 allow="cross-origin-isolated"
                 className="h-full w-full flex-1"
@@ -437,7 +441,7 @@ export function Workspace(props: Props) {
               hidden: !view.state.includes("EDITOR"),
             })}
           >
-            <Card className="h-full w-full overflow-hidden border-zinc-800 bg-black">
+            <Card className="h-full w-full overflow-hidden border-zinc-800 bg-black p-4">
               <MonacoEditor
                 className="h-full w-full"
                 initialValue={
@@ -458,7 +462,7 @@ export function Workspace(props: Props) {
               hidden: !view.state.includes("TERMINAL"),
             })}
           >
-            <Card className="overflow-hidden border-zinc-800 bg-black p-2">
+            <Card className="overflow-hidden border-zinc-800 bg-black p-4">
               <div
                 className="h-full w-full overflow-x-hidden"
                 ref={terminalComponentRef}
