@@ -94,8 +94,8 @@ export function MonacoEditor(props: Props) {
 
   return (
     <Card className="flex h-full flex-col">
-      <div className="flex min-h-6 items-center gap-x-2 border-zinc-800/80 border-b bg-zinc-950/50 px-4 py-1.5">
-        <div className="flex flex-1 items-center gap-x-2">
+      <div className="flex min-h-6 items-center gap-2 border-zinc-800/80 border-b bg-zinc-950/50 p-2">
+        <div className="flex flex-1 items-center gap-2">
           <p className="font-medium text-sm text-zinc-300">{props.fileName}</p>
         </div>
         {props.isShowSaveButton && (
