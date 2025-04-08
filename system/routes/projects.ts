@@ -2,7 +2,8 @@ import { generateId } from "ai"
 import type { Message } from "ai"
 import { fileStorage } from "~/lib/file-storage"
 import { messageStorage } from "~/lib/message-storage"
-import { mainTemplate } from "~/lib/templates/main"
+import { presets } from "~/lib/presets"
+import type { PresetID } from "~/lib/presets"
 import { factory } from "~/system/factory"
 import type { Project } from "~/types/workspace"
 
@@ -28,10 +29,13 @@ export const GET = factory.createHandlers(async (c) => {
  * 新規プロジェクトを作成します。
  */
 export const POST = factory.createHandlers(async (c) => {
+  const body = await c.req.json()
+  const presetId = (body.presetId as PresetID) || "main"
+  
   const project = {
     id: generateId(),
     messages: [],
-    files: mainTemplate,
+    files: presets[presetId].files,
   } satisfies Project
 
   await messageStorage.set(project.id, project.messages)

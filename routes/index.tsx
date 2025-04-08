@@ -17,7 +17,16 @@ import { Button } from "~/components/ui/button"
 import { Card } from "~/components/ui/card"
 import { Input } from "~/components/ui/input"
 import { LinkButton } from "~/components/ui/link-button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select"
 import { client } from "~/lib/client"
+import { presets } from "~/lib/presets"
+import type { PresetID } from "~/lib/presets"
 import type { Project } from "~/types/workspace"
 
 export const Route = createFileRoute("/")({
@@ -39,14 +48,17 @@ function RouteComponent() {
 
   const createProject = useMutation({
     mutationKey: ["projects"],
-    mutationFn: async () => {
-      const res = await client.projects.$post()
+    mutationFn: async (presetId: PresetID) => {
+      const res = await client.projects.$post({
+        json: { presetId },
+      })
       const json = await res.json()
       return json
     },
   })
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [selectedPreset, setSelectedPreset] = useState<PresetID>("main")
 
   const mainRef = useRef<HTMLDivElement>(null)
 
@@ -57,7 +69,7 @@ function RouteComponent() {
 
     const prompt = formData.get("prompt")
 
-    const project = await createProject.mutateAsync()
+    const project = await createProject.mutateAsync(selectedPreset)
 
     navigate({
       to: "/$project",
@@ -162,6 +174,26 @@ function RouteComponent() {
                       placeholder="Webサイトの要件を入力してください..."
                       name="prompt"
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-sm text-zinc-400">
+                      プリセットを選択
+                    </label>
+                    <Select
+                      value={selectedPreset}
+                      onValueChange={(value) => setSelectedPreset(value as PresetID)}
+                    >
+                      <SelectTrigger className="border-zinc-800 bg-zinc-900/80 text-white">
+                        <SelectValue placeholder="プリセットを選択" />
+                      </SelectTrigger>
+                      <SelectContent className="border-zinc-800 bg-zinc-900 text-white">
+                        {Object.values(presets).map((preset) => (
+                          <SelectItem key={preset.id} value={preset.id}>
+                            {preset.name} - {preset.description}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <Button
                     type="submit"
