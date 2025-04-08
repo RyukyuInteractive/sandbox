@@ -236,7 +236,7 @@ export function Workspace(props: Props) {
       (base: string) =>
       async (
         event: "rename" | "change",
-        path: string | Uint8Array<ArrayBufferLike>,
+        path: string | Uint8Array,
       ) => {
         if (typeof path !== "string") return
         const realPath = `${base}${path}`
@@ -341,8 +341,23 @@ export function Workspace(props: Props) {
   return (
     <div className="flex h-svh w-full bg-zinc-900">
       <aside className="flex h-full w-96 min-w-96 flex-col gap-2 p-2">
-        <Card className="h-1/2 w-full overflow-hidden rounded-xl border-zinc-800 bg-black p-4">
+        <Card className="h-1/2 w-full overflow-hidden rounded-xl border-zinc-800 bg-black">
           <div className="scrollbar-thin scrollbar-track-zinc-900 scrollbar-thumb-zinc-700 flex h-full flex-col overflow-hidden">
+            <ul className="space-y-2 flex-1 overflow-y-auto p-2 text-zinc-300" ref={(el) => {
+                if (el) {
+                  el.scrollTop = el.scrollHeight;
+                }
+              }}>
+              {chat.status !== "ready" && (
+                <li>
+                  <p className="text-xs">{toAnnotationMessage(annotation)}</p>
+                </li>
+              )}
+              {chat.messages?.map((message) => (
+                <ChatMessage key={message.id} message={message} />
+              ))}
+            </ul>
+            <Separator className="bg-zinc-800" />
             <form className="flex gap-2 p-2" onSubmit={onSubmit}>
               <Input
                 className="h-8 border-zinc-800 bg-zinc-900/80 text-white placeholder:text-zinc-400"
@@ -358,21 +373,6 @@ export function Workspace(props: Props) {
                 <Send className="h-6 w-6" />
               </Button>
             </form>
-            <Separator className="bg-zinc-800" />
-            <ul className="space-y-2 overflow-y-auto p-2 text-zinc-300" ref={(el) => {
-                if (el) {
-                  el.scrollTop = el.scrollHeight;
-                }
-              }}>
-              {chat.status !== "ready" && (
-                <li>
-                  <p className="text-xs">{toAnnotationMessage(annotation)}</p>
-                </li>
-              )}
-              {chat.messages?.map((message) => (
-                <ChatMessage key={message.id} message={message} />
-              ))}
-            </ul>
           </div>
         </Card>
         <FileTreeCard
