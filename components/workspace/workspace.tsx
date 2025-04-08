@@ -340,10 +340,10 @@ export function Workspace(props: Props) {
 
   return (
     <div className="flex h-svh w-full bg-zinc-900">
-      <aside className="flex h-full w-96 min-w-96 flex-col gap-y-4 p-2">
+      <aside className="flex h-full w-96 min-w-96 flex-col gap-2 p-2">
         <Card className="h-1/2 w-full overflow-hidden rounded-xl border-zinc-800 bg-black">
           <div className="scrollbar-thin scrollbar-track-zinc-900 scrollbar-thumb-zinc-700 flex h-full flex-col overflow-hidden">
-            <form className="flex gap-x-2 p-2" onSubmit={onSubmit}>
+            <form className="flex gap-2 p-2" onSubmit={onSubmit}>
               <Input
                 className="h-8 border-zinc-800 bg-zinc-900/80 text-white placeholder:text-zinc-400"
                 value={chat.input}
@@ -377,8 +377,8 @@ export function Workspace(props: Props) {
           onSelectFile={onSelectFile}
         />
       </aside>
-      <main className="flex flex-1 flex-col gap-y-4 p-2">
-        <div className="flex gap-x-4">
+      <main className="flex flex-1 flex-col gap-2 p-2">
+        <div className="flex gap-2">
           <Button
             size="icon"
             variant="ghost"
