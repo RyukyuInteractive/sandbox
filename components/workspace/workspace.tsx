@@ -340,10 +340,10 @@ export function Workspace(props: Props) {
 
   return (
     <div className="flex h-svh w-full bg-zinc-900">
-      <aside className="flex h-full w-96 min-w-96 flex-col gap-y-4 px-3 py-4">
+      <aside className="flex h-full w-96 min-w-96 flex-col gap-y-4 p-2">
         <Card className="h-1/2 w-full overflow-hidden rounded-xl border-zinc-800 bg-black">
           <div className="scrollbar-thin scrollbar-track-zinc-900 scrollbar-thumb-zinc-700 flex h-full flex-col overflow-hidden">
-            <form className="flex gap-x-2 p-4" onSubmit={onSubmit}>
+            <form className="flex gap-x-2 p-2" onSubmit={onSubmit}>
               <Input
                 className="h-8 border-zinc-800 bg-zinc-900/80 text-white placeholder:text-zinc-400"
                 value={chat.input}
@@ -359,7 +359,7 @@ export function Workspace(props: Props) {
               </Button>
             </form>
             <Separator className="bg-zinc-800" />
-            <ul className="space-y-2 overflow-y-auto p-3 text-zinc-300">
+            <ul className="space-y-2 overflow-y-auto p-2 text-zinc-300">
               {chat.status !== "ready" && (
                 <li>
                   <p className="text-xs">{toAnnotationMessage(annotation)}</p>
@@ -377,7 +377,7 @@ export function Workspace(props: Props) {
           onSelectFile={onSelectFile}
         />
       </aside>
-      <main className="flex flex-1 flex-col gap-y-4 p-4">
+      <main className="flex flex-1 flex-col gap-y-4 p-2">
         <div className="flex gap-x-4">
           <Button
             size="icon"

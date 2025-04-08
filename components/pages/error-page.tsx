@@ -7,10 +7,10 @@ export function ErrorPage(props: ErrorComponentProps) {
   return (
     <div className="flex min-h-screen bg-zinc-900">
       <main className="min-h-screen flex-1">
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto p-2">
           <div className="flex min-h-[80vh] flex-col items-center justify-center text-center">
             <Card className="w-full max-w-3xl border-zinc-800 bg-black">
-              <div className="space-y-6 p-6">
+              <div className="space-y-6 p-2">
                 <div className="flex justify-center">
                   <AlertTriangle className="h-16 w-16 text-red-500" />
                 </div>

@@ -74,7 +74,7 @@ function RouteComponent() {
       <aside
         className={`fixed top-0 left-0 z-40 h-screen w-72 transform border-zinc-800 border-r bg-black backdrop-blur-sm transition-transform duration-300 ease-in-out ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} overflow-y-auto`}
       >
-        <div className="sticky top-0 space-y-2 border-zinc-800 border-b bg-black p-4 pt-16 backdrop-blur-sm">
+        <div className="sticky top-0 space-y-2 border-zinc-800 border-b bg-black p-2 pt-16 backdrop-blur-sm">
           <Button
             type="submit"
             form="new-room"
@@ -94,7 +94,7 @@ function RouteComponent() {
           </LinkButton>
         </div>
 
-        <nav className="space-y-4 p-4">
+        <nav className="space-y-4 p-2">
           <div className="flex items-center gap-2 px-2 text-sm text-zinc-400">
             <Clock className="h-4 w-4" />
             <span>最近のチャット</span>
@@ -138,7 +138,7 @@ function RouteComponent() {
         className={`min-h-screen flex-1 overflow-auto transition-all duration-300 ease-in-out ${isSidebarOpen ? "pl-72" : "pl-0"}
         `}
       >
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto p-2">
           <div className="flex min-h-[80vh] flex-col items-center justify-center text-center">
             <h1 className="relative mb-6 font-black text-7xl text-white">
               sandbox
@@ -149,7 +149,7 @@ function RouteComponent() {
             </p>
 
             <Card className="w-full max-w-3xl border-zinc-800 bg-black">
-              <div className="p-6">
+              <div className="p-2">
                 <form
                   id="new-room"
                   onSubmit={handleSubmit}
