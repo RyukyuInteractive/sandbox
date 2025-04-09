@@ -271,7 +271,46 @@ function WorkspaceContent({
 
   return (
     <div className="flex h-svh w-full bg-zinc-900">
-      <main className="flex w-full flex-col gap-2 p-2">
+      {/* チャット部分（左側） */}
+      <div className="w-1/3 border-r border-zinc-800 p-2">
+        <Card className="h-full w-full overflow-hidden rounded-xl border-zinc-800 bg-black">
+          <div className="scrollbar-thin scrollbar-track-zinc-900 scrollbar-thumb-zinc-700 flex h-full flex-col overflow-hidden">
+            <ul className="space-y-2 flex-1 overflow-y-auto p-2 text-zinc-300" ref={(el) => {
+                if (el) {
+                  el.scrollTop = el.scrollHeight;
+                }
+              }}>
+              {chat.status !== "ready" && (
+                <li>
+                  <p className="text-xs">{toAnnotationMessage(annotation)}</p>
+                </li>
+              )}
+              {chat.messages?.map((message) => (
+                <ChatMessage key={message.id} message={message} />
+              ))}
+            </ul>
+            <Separator className="bg-zinc-800" />
+            <form className="flex gap-2 p-2" onSubmit={onSubmit}>
+              <Input
+                className="h-8 border-zinc-800 bg-zinc-900/80 text-white placeholder:text-zinc-400"
+                value={chat.input}
+                placeholder="プロンプトを入力"
+                onChange={chat.handleInputChange}
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300 active:scale-90"
+              >
+                <Send className="h-6 w-6" />
+              </Button>
+            </form>
+          </div>
+        </Card>
+      </div>
+
+      {/* エディタ部分（右側） */}
+      <main className="flex w-2/3 flex-col gap-2 p-2">
         <div className="flex gap-2">
           <Button
             size="icon"
@@ -352,6 +391,7 @@ function WorkspaceContent({
               />
             </Card>
           </div>
+          {/* エディタ、ターミナル、サイドバーをプレビューの上に重ねる */}
           <div
             className={cn("absolute inset-0", {
               hidden: !view.state.includes("EDITOR"),
@@ -374,11 +414,11 @@ function WorkspaceContent({
             </Card>
           </div>
           <div
-            className={cn("absolute right-0 bottom-0 w-full p-2 opacity-90", {
+            className={cn("absolute right-0 bottom-0 w-2/3 h-1/3 p-2", {
               hidden: !view.state.includes("TERMINAL"),
             })}
           >
-            <Card className="overflow-hidden border-zinc-800 bg-black p-4">
+            <Card className="h-full w-full overflow-hidden border-zinc-800 bg-black p-4">
               <div
                 className="h-full w-full overflow-x-hidden"
                 ref={terminalComponentRef}
@@ -386,51 +426,16 @@ function WorkspaceContent({
             </Card>
           </div>
           <div
-            className={cn("absolute left-0 top-0 h-full w-96 p-2 opacity-95", {
+            className={cn("absolute right-0 top-0 h-2/3 w-64 p-2", {
               hidden: !view.state.includes("SIDEBAR"),
             })}
           >
-            <div className="flex h-full flex-col gap-2">
-              <Card className="h-1/2 w-full overflow-hidden rounded-xl border-zinc-800 bg-black">
-                <div className="scrollbar-thin scrollbar-track-zinc-900 scrollbar-thumb-zinc-700 flex h-full flex-col overflow-hidden">
-                  <ul className="space-y-2 flex-1 overflow-y-auto p-2 text-zinc-300" ref={(el) => {
-                      if (el) {
-                        el.scrollTop = el.scrollHeight;
-                      }
-                    }}>
-                    {chat.status !== "ready" && (
-                      <li>
-                        <p className="text-xs">{toAnnotationMessage(annotation)}</p>
-                      </li>
-                    )}
-                    {chat.messages?.map((message) => (
-                      <ChatMessage key={message.id} message={message} />
-                    ))}
-                  </ul>
-                  <Separator className="bg-zinc-800" />
-                  <form className="flex gap-2 p-2" onSubmit={onSubmit}>
-                    <Input
-                      className="h-8 border-zinc-800 bg-zinc-900/80 text-white placeholder:text-zinc-400"
-                      value={chat.input}
-                      placeholder="プロンプトを入力"
-                      onChange={chat.handleInputChange}
-                    />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300 active:scale-90"
-                    >
-                      <Send className="h-6 w-6" />
-                    </Button>
-                  </form>
-                </div>
-              </Card>
-              <FileTreeCard
-                preSaveFiles={project.preSaveData.files}
-                files={project.data.files}
-                onSelectFile={onSelectFile}
-              />
-            </div>
+            <FileTreeCard
+              className="h-full"
+              preSaveFiles={project.preSaveData.files}
+              files={project.data.files}
+              onSelectFile={onSelectFile}
+            />
           </div>
         </div>
       </main>
