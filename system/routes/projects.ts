@@ -13,10 +13,12 @@ export const GET = factory.createHandlers(async (c) => {
   const promises = projectIds.map(async (projectId): Promise<Project> => {
     const messages = await messageStorage.get<Message[]>(projectId)
     const files = await fileStorage.get<Record<string, string>>(projectId)
+    const presetId = await fileStorage.get<PresetID>(`${projectId}_preset`)
     return {
       id: projectId,
       messages: messages ?? [],
       files: files ?? {},
+      presetId: presetId ?? "main",
     } satisfies Project
   })
 
@@ -36,10 +38,12 @@ export const POST = factory.createHandlers(async (c) => {
     id: generateId(),
     messages: [],
     files: presets[presetId].files,
+    presetId,
   } satisfies Project
 
   await messageStorage.set(project.id, project.messages)
   await fileStorage.set(project.id, project.files)
+  await fileStorage.set(`${project.id}_preset`, project.presetId)
 
   return c.json(project)
 })

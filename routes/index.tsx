@@ -123,6 +123,11 @@ function RouteComponent() {
                 <span className="block w-full truncate text-left">
                   {item.messages.find(({ role }) => role === "user")?.content ??
                     "新しいチャット"}
+                  {item.presetId && (
+                    <span className="ml-1 text-xs text-emerald-400">
+                      [{presets[item.presetId as PresetID]?.name || item.presetId}]
+                    </span>
+                  )}
                 </span>
               </LinkButton>
             ))}
