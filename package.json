@@ -7,7 +7,8 @@
     "format": "biome check . --fix --unsafe",
     "build": "bun --bun vite build",
     "deploy": "wrangler deploy",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "init": "bun run scripts/init.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.1.15",

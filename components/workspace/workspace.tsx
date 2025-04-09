@@ -430,12 +430,42 @@ function WorkspaceContent({
               hidden: !view.state.includes("SIDEBAR"),
             })}
           >
-            <FileTreeCard
-              className="h-full"
-              preSaveFiles={project.preSaveData.files}
-              files={project.data.files}
-              onSelectFile={onSelectFile}
-            />
+            <Card className="h-full w-full overflow-hidden rounded-xl border-zinc-800 bg-black">
+              <div className="flex flex-col h-full">
+                <div className="p-2 border-b border-zinc-800">
+                  <LinkButton
+                    to="/"
+                    variant="ghost"
+                    className="w-full justify-start gap-2 text-zinc-300 hover:text-white"
+                  >
+                    <Home className="h-4 w-4" />
+                    <span>ホームに戻る</span>
+                  </LinkButton>
+                </div>
+                <div className="flex-1 overflow-auto">
+                  <FileTreeCard
+                    className="border-none"
+                    preSaveFiles={project.preSaveData.files}
+                    files={project.data.files}
+                    onSelectFile={onSelectFile}
+                  />
+                </div>
+                <div className="p-2 border-t border-zinc-800">
+                  <h3 className="mb-2 text-sm font-semibold text-zinc-400">設定</h3>
+                  <div className="space-y-1">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-sm text-zinc-300 hover:text-white"
+                      onClick={() => {
+                        console.log("全般設定")
+                      }}
+                    >
+                      <span>全般</span>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </Card>
           </div>
         </div>
       </main>

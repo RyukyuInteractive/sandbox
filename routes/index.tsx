@@ -86,51 +86,204 @@ function RouteComponent() {
       <aside
         className={`fixed top-0 left-0 z-40 h-screen w-72 transform border-zinc-800 border-r bg-black backdrop-blur-sm transition-transform duration-300 ease-in-out ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} overflow-y-auto`}
       >
-        <div className="sticky top-0 space-y-2 border-zinc-800 border-b bg-black p-2 pt-16 backdrop-blur-sm">
-          <Button
-            type="submit"
-            form="new-room"
-            className="w-full gap-2 bg-emerald-600 text-white hover:bg-emerald-700"
-          >
-            <PlusCircle className="h-5 w-5" />
-            <span>チャットを新規作成</span>
-          </Button>
-
-          <LinkButton
-            to="/settings"
-            variant="ghost"
-            className="w-full justify-center gap-2 text-zinc-300 hover:bg-zinc-800/50 hover:text-white"
-          >
-            <Shield className="h-5 w-5" />
-            <span>APIキーの設定</span>
-          </LinkButton>
+        {/* タイトル */}
+        <div className="sticky top-0 border-zinc-800 border-b bg-black p-4 pt-16 backdrop-blur-sm">
+          <h1 className="text-xl font-bold text-white">Sandbox</h1>
         </div>
 
-        <nav className="space-y-4 p-2">
-          <div className="flex items-center gap-2 px-2 text-sm text-zinc-400">
-            <Clock className="h-4 w-4" />
-            <span>最近のチャット</span>
-          </div>
-          <div className="space-y-1">
-            {result.data.map((item) => (
-              <LinkButton
-                to="/$project"
-                params={{ project: item.id }}
-                key={item.id}
-                variant="ghost"
-                className="w-full justify-start overflow-hidden text-sm text-zinc-300 hover:text-white"
+        <nav className="flex flex-col h-[calc(100vh-80px)]">
+          {/* プロジェクト */}
+          <div className="p-4 border-b border-zinc-800">
+            <h2 className="mb-2 text-sm font-semibold text-zinc-400">プロジェクト</h2>
+            <div className="space-y-1">
+              <Button
+                type="submit"
+                form="new-room"
+                className="w-full gap-2 bg-emerald-600 text-white hover:bg-emerald-700"
               >
-                <span className="block w-full truncate text-left">
-                  {item.messages.find(({ role }) => role === "user")?.content ??
-                    "新しいチャット"}
-                  {item.presetId && (
-                    <span className="ml-1 text-xs text-emerald-400">
-                      [{presets[item.presetId as PresetID]?.name || item.presetId}]
+                <PlusCircle className="h-4 w-4" />
+                <span>新しいプロジェクト</span>
+              </Button>
+              
+              <div className="mt-2 space-y-1">
+                {result.data.map((item) => (
+                  <LinkButton
+                    to="/$project"
+                    params={{ project: item.id }}
+                    key={item.id}
+                    variant="ghost"
+                    className="w-full justify-start overflow-hidden text-sm text-zinc-300 hover:text-white"
+                  >
+                    <span className="block w-full truncate text-left">
+                      {item.messages.find(({ role }) => role === "user")?.content ??
+                        "新しいプロジェクト"}
+                      {item.presetId && (
+                        <span className="ml-1 text-xs text-emerald-400">
+                          [{presets[item.presetId as PresetID]?.name || item.presetId}]
+                        </span>
+                      )}
                     </span>
-                  )}
-                </span>
+                  </LinkButton>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* 検索ボックス */}
+          <div className="p-4 border-b border-zinc-800">
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const searchQuery = formData.get("search") as string;
+              if (searchQuery.trim()) {
+                console.log(`検索クエリ: ${searchQuery}`);
+                alert(`「${searchQuery}」の検索結果は将来的に実装予定です。`);
+              }
+            }}>
+              <div className="relative">
+                <Input
+                  className="w-full border-zinc-800 bg-zinc-900/80 pl-8 text-white placeholder:text-zinc-400"
+                  placeholder="検索..."
+                  name="search"
+                />
+                <button
+                  type="submit"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <path d="m21 21-4.3-4.3" />
+                  </svg>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* ページ */}
+          <div className="p-4 border-b border-zinc-800">
+            <h2 className="mb-2 text-sm font-semibold text-zinc-400">ページ</h2>
+            <div className="space-y-1 text-sm">
+              <LinkButton
+                to="/"
+                variant="ghost"
+                className="w-full justify-start text-zinc-300 hover:text-white"
+              >
+                <span>ホーム</span>
               </LinkButton>
-            ))}
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-zinc-300 hover:text-white"
+                onClick={() => {
+                  console.log("プロジェクト一覧")
+                }}
+              >
+                <span>プロジェクト一覧</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* 設定 */}
+          <div className="p-4 border-b border-zinc-800">
+            <h2 className="mb-2 text-sm font-semibold text-zinc-400">設定</h2>
+            <div className="space-y-1 text-sm">
+              <LinkButton
+                to="/settings"
+                variant="ghost"
+                className="w-full justify-start text-zinc-300 hover:text-white"
+              >
+                <span>全般</span>
+              </LinkButton>
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-zinc-300 hover:text-white"
+                onClick={() => {
+                  console.log("ユーザ管理")
+                }}
+              >
+                <span>ユーザ管理</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* API */}
+          <div className="p-4 border-b border-zinc-800">
+            <h2 className="mb-2 text-sm font-semibold text-zinc-400">API</h2>
+            <div className="space-y-1 text-sm">
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-zinc-300 hover:text-white"
+                onClick={() => {
+                  console.log("API設定")
+                }}
+              >
+                <span>API設定</span>
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-zinc-300 hover:text-white"
+                onClick={() => {
+                  console.log("プレイグラウンド")
+                }}
+              >
+                <span>プレイグラウンド</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* ユーザー名ボタン（下部固定） */}
+          <div className="mt-auto p-4 border-t border-zinc-800">
+            <div className="relative group">
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-zinc-300 hover:text-white"
+              >
+                <span>ユーザー名</span>
+              </Button>
+              <div className="absolute bottom-full left-0 w-full hidden group-hover:block">
+                <div className="bg-zinc-800 rounded-md p-2 shadow-lg">
+                  <div className="space-y-1 text-sm">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-zinc-300 hover:text-white"
+                      onClick={() => {
+                        console.log("ユーザー設定")
+                      }}
+                    >
+                      <span>設定</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-zinc-300 hover:text-white"
+                      onClick={() => {
+                        console.log("アカウント設定")
+                      }}
+                    >
+                      <span>アカウント</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-zinc-300 hover:text-white"
+                      onClick={() => {
+                        console.log("ログアウト")
+                      }}
+                    >
+                      <span>ログアウト</span>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </nav>
       </aside>
