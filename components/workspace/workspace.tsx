@@ -165,10 +165,7 @@ function WorkspaceContent({
 
     const handleWatch =
       (base: string) =>
-      async (
-        event: "rename" | "change",
-        path: string | Uint8Array,
-      ) => {
+      async (event: "rename" | "change", path: string | Uint8Array) => {
         if (typeof path !== "string") return
         const realPath = `${base}${path}`
         if (getExtname(realPath) === "") return
@@ -275,11 +272,14 @@ function WorkspaceContent({
       <div className="w-1/3 border-r border-zinc-800 p-2">
         <Card className="h-full w-full overflow-hidden rounded-xl border-zinc-800 bg-black">
           <div className="scrollbar-thin scrollbar-track-zinc-900 scrollbar-thumb-zinc-700 flex h-full flex-col overflow-hidden">
-            <ul className="space-y-2 flex-1 overflow-y-auto p-2 text-zinc-300" ref={(el) => {
+            <ul
+              className="flex-1 space-y-2 overflow-y-auto p-2 text-zinc-300"
+              ref={(el) => {
                 if (el) {
-                  el.scrollTop = el.scrollHeight;
+                  el.scrollTop = el.scrollHeight
                 }
-              }}>
+              }}
+            >
               {chat.status !== "ready" && (
                 <li>
                   <p className="text-xs">{toAnnotationMessage(annotation)}</p>
