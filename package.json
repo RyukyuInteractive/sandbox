@@ -2,12 +2,12 @@
   "name": "sandbox",
   "type": "module",
   "scripts": {
-    "predev": "bun run .ai/lib/build.ts",
     "dev": "bun --bun vite",
     "format": "biome check . --fix --unsafe",
     "build": "bun --bun vite build",
     "deploy": "wrangler deploy",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "init": "bun run .ai/build.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.1.15",

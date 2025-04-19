@@ -217,6 +217,13 @@ flowchart TB
 - Define only one function or class or type per file
 - Do not use multiple exports in a single file
 
+# 14.test.md
+
+- Do not create tests for files with side effects such as database operations
+- Use only `test` and `expect` from `bun:test`
+- Test titles should use Japanese
+- Filename format is "*.test.ts"
+
 # 15.code.md
 
 - Use descriptive naming conventions
@@ -325,12 +332,3 @@ flowchart TB
 以下のファイルは書き換えてはいけません。
 
 - vite.config.ts
-
-# Rule files
-
-If you find anything below that matches your purpose, read the file indicated in the 'read' section for reference.
-
-## -
-
-- target: `app/interface/routes/$project.index.tsx`
-- read: `.ai/rules/app.interface.routes.$project.index.mdc`
