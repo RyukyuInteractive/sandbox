@@ -16,6 +16,7 @@ export const GET = factory.createHandlers(async (c) => {
 
   const messages = await messageStorage.get<Message[]>(projectId)
   const files = await fileStorage.get<Record<string, string>>(projectId)
+  const title = await fileStorage.get<string>(`${projectId}_title`) || "無題のプロジェクト"
 
   if (messages == null || files == null) {
     throw new HTTPException(404, { message: "Project not found" })
@@ -23,6 +24,7 @@ export const GET = factory.createHandlers(async (c) => {
 
   const project = {
     id: projectId,
+    title,
     messages: messages ?? [],
     files: files ?? {},
   } satisfies Project
@@ -57,9 +59,11 @@ export const PUT = factory.createHandlers(
 
     const messages = await messageStorage.get<Message[]>(projectId)
     const files = await fileStorage.get<Record<string, string>>(projectId)
+    const title = await fileStorage.get<string>(`${projectId}_title`) || "無題のプロジェクト"
 
     const project = {
       id: projectId,
+      title,
       messages: messages ?? [],
       files: files ?? {},
     } satisfies Project

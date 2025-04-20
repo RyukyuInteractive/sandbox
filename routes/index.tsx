@@ -14,6 +14,7 @@ import {
   SidebarTrigger,
 } from "~/components/ui/sidebar"
 import { Textarea } from "~/components/ui/textarea"
+import { Input } from "~/components/ui/input"
 import { client } from "~/lib/client"
 import { presets } from "~/lib/presets"
 import type { PresetID } from "~/lib/presets"
@@ -40,9 +41,9 @@ function RouteComponent() {
 
   const createProject = useMutation({
     mutationKey: ["projects"],
-    mutationFn: async (presetId: PresetID) => {
+    mutationFn: async (params: { presetId: PresetID, title: string }) => {
       const res = await client.projects.$post({
-        json: { presetId },
+        json: params,
       })
       const json = await res.json()
       return json
@@ -53,7 +54,12 @@ function RouteComponent() {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
     const prompt = formData.get("prompt")
-    const project = await createProject.mutateAsync(selectedPreset)
+    const title = formData.get("title") as string || "無題のプロジェクト"
+    
+    const project = await createProject.mutateAsync({
+      presetId: selectedPreset,
+      title,
+    })
 
     navigate({
       to: "/$project",
@@ -83,8 +89,7 @@ function RouteComponent() {
                   variant="outline"
                   className="h-auto max-h-auto w-full justify-start overflow-hidden"
                 >
-                  {item.messages.find(({ role }) => role === "user")?.content ??
-                    "-"}
+                  {item.title || "無題のプロジェクト"}
                 </LinkButton>
               </div>
             ))}
@@ -111,6 +116,11 @@ function RouteComponent() {
               className="flex flex-col space-y-6 p-6"
             >
               <div className="space-y-2">
+                <Input
+                  placeholder="プロジェクトタイトル"
+                  name="title"
+                  className="mb-2"
+                />
                 <Textarea
                   placeholder="Webサイトの要件を入力してください..."
                   name="prompt"
