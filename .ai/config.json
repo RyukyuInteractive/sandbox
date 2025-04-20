@@ -1,7 +1,8 @@
 {
   "root": ".ai",
   "instructions": {
-    "overview": ".ai/00.overview.a.md",
+    "overview": ".ai/00.overview.md",
+    "workflow": ".ai/01.workflow.a.md",
     "output": ".ai/10.output.md",
     "commitMessage": ".ai/11.commit-message.md",
     "pullRequestDescription": ".ai/12.pull-request-description.md",

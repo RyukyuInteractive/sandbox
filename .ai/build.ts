@@ -183,6 +183,7 @@ async function updateCopilotInstructions() {
 
   const rules = Object.values([
     config.instructions.overview,
+    config.instructions.workflow,
     config.instructions.output,
     config.instructions.code,
     config.instructions.architecture,
@@ -272,6 +273,7 @@ async function updateDevinRule() {
 
   const instructions = [
     config.instructions.overview,
+    config.instructions.workflow,
     config.instructions.output,
     config.instructions.test,
     config.instructions.code,
@@ -298,6 +300,7 @@ async function updateEditorRule() {
 
   const instructions = [
     config.instructions.overview,
+    config.instructions.workflow,
     config.instructions.output,
     config.instructions.commitMessage,
     config.instructions.pullRequestDescription,
