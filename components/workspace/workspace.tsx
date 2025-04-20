@@ -14,22 +14,15 @@ import { Separator } from "~/components/ui/separator"
 import { ChatMessage } from "~/components/workspace/chat-message"
 import { FileTreeCard } from "~/components/workspace/file-tree-card"
 import { MonacoEditor } from "~/components/workspace/monaco-editor"
-import { useCredentialStorage } from "~/hooks/use-credential-storage"
 import { useProject } from "~/hooks/use-project"
 import { useShell } from "~/hooks/use-shell"
 import { useViews } from "~/hooks/use-views"
 import { useWebContainer } from "~/hooks/use-web-container"
 import { getCurrentAnnotation } from "~/lib/ai/get-current-annotation"
 import { toAnnotationMessage } from "~/lib/ai/to-annotation-message"
-import { client } from "~/lib/client"
 import { getExtname } from "~/lib/getExtname"
 import { toFileSystemTree } from "~/lib/to-file-system-tree"
-import { executeCommandTool } from "~/lib/tools/execute-command-tool"
-import { readFileTool } from "~/lib/tools/read-file-tool"
-import { searchFilesTool } from "~/lib/tools/search-files-tool"
-import { writeFileTool } from "~/lib/tools/write-file-tool"
 import { cn } from "~/lib/utils"
-import { useChat } from "@ai-sdk/react"
 
 type Props = {
   projectId: string
@@ -111,7 +104,7 @@ function WorkspaceContent({
   view,
 }: WorkspaceContentProps) {
   const chat = useAI()
-  
+
   useEffect(() => {
     runDevContainer()
 
@@ -269,7 +262,7 @@ function WorkspaceContent({
   return (
     <div className="flex h-svh w-full bg-zinc-900">
       {/* チャット部分（左側） */}
-      <div className="w-1/3 border-r border-zinc-800 p-2">
+      <div className="w-1/3 border-zinc-800 border-r p-2">
         <Card className="h-full w-full overflow-hidden rounded-xl border-zinc-800 bg-black">
           <div className="scrollbar-thin scrollbar-track-zinc-900 scrollbar-thumb-zinc-700 flex h-full flex-col overflow-hidden">
             <ul
@@ -414,7 +407,7 @@ function WorkspaceContent({
             </Card>
           </div>
           <div
-            className={cn("absolute right-0 bottom-0 w-2/3 h-1/3 p-2", {
+            className={cn("absolute right-0 bottom-0 h-1/3 w-2/3 p-2", {
               hidden: !view.state.includes("TERMINAL"),
             })}
           >
@@ -426,44 +419,18 @@ function WorkspaceContent({
             </Card>
           </div>
           <div
-            className={cn("absolute right-0 top-0 h-2/3 w-64 p-2", {
+            className={cn("absolute top-0 right-0 h-2/3 w-64 p-2", {
               hidden: !view.state.includes("SIDEBAR"),
             })}
           >
             <Card className="h-full w-full overflow-hidden rounded-xl border-zinc-800 bg-black">
-              <div className="flex flex-col h-full">
-                <div className="p-2 border-b border-zinc-800">
-                  <LinkButton
-                    to="/"
-                    variant="ghost"
-                    className="w-full justify-start gap-2 text-zinc-300 hover:text-white"
-                  >
-                    <Home className="h-4 w-4" />
-                    <span>ホームに戻る</span>
-                  </LinkButton>
-                </div>
-                <div className="flex-1 overflow-auto">
-                  <FileTreeCard
-                    className="border-none"
-                    preSaveFiles={project.preSaveData.files}
-                    files={project.data.files}
-                    onSelectFile={onSelectFile}
-                  />
-                </div>
-                <div className="p-2 border-t border-zinc-800">
-                  <h3 className="mb-2 text-sm font-semibold text-zinc-400">設定</h3>
-                  <div className="space-y-1">
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start text-sm text-zinc-300 hover:text-white"
-                      onClick={() => {
-                        console.log("全般設定")
-                      }}
-                    >
-                      <span>全般</span>
-                    </Button>
-                  </div>
-                </div>
+              <div className="flex h-full flex-col">
+                <FileTreeCard
+                  className="border-none"
+                  preSaveFiles={project.preSaveData.files}
+                  files={project.data.files}
+                  onSelectFile={onSelectFile}
+                />
               </div>
             </Card>
           </div>

@@ -1,17 +1,17 @@
-import { useEffect, useRef, useState } from "react"
+import { Code, Download, Home } from "lucide-react"
 import type { editor } from "monaco-editor-core"
 import * as monaco from "monaco-editor-core"
-import { Card } from "~/components/ui/card"
+import { useEffect, useRef, useState } from "react"
 import { Button } from "~/components/ui/button"
-import { Code, Download, Home } from "lucide-react"
+import { Card } from "~/components/ui/card"
 import { LinkButton } from "~/components/ui/link-button"
-import { cn } from "~/lib/utils"
-import { MonacoEditor } from "~/components/workspace/monaco-editor"
 import { FileTreeCard } from "~/components/workspace/file-tree-card"
+import { MonacoEditor } from "~/components/workspace/monaco-editor"
 import { useViews } from "~/hooks/use-views"
 import { useWebContainer } from "~/hooks/use-web-container"
 import { getExtname } from "~/lib/getExtname"
 import { toFileSystemTree } from "~/lib/to-file-system-tree"
+import { cn } from "~/lib/utils"
 
 type Props = {
   projectId: string
@@ -73,10 +73,7 @@ export function StandaloneEditor({
 
     const handleWatch =
       (base: string) =>
-      async (
-        event: "rename" | "change",
-        path: string | Uint8Array,
-      ) => {
+      async (event: "rename" | "change", path: string | Uint8Array) => {
         if (typeof path !== "string") return
         const realPath = `${base}${path}`
         if (getExtname(realPath) === "") return
@@ -253,7 +250,7 @@ export function StandaloneEditor({
             </Card>
           </div>
           <div
-            className={cn("absolute left-0 top-0 h-full w-96 p-2 opacity-95", {
+            className={cn("absolute top-0 left-0 h-full w-96 p-2 opacity-95", {
               hidden: !view.state.includes("SIDEBAR"),
             })}
           >

@@ -4,9 +4,8 @@ export const landingPagePreset: Preset = {
   id: "landing-page",
   name: "ランディングページ",
   description: "商品やサービスを紹介するためのランディングページテンプレート",
-  files: {}
+  files: {},
 }
-
 
 landingPagePreset.files["package.json"] = JSON.stringify(
   {
@@ -78,7 +77,8 @@ landingPagePreset.files["package.json"] = JSON.stringify(
   2,
 )
 
-landingPagePreset.files["src/app.tsx"] = `import { Button } from "~/components/ui/button"
+landingPagePreset.files["src/app.tsx"] =
+  `import { Button } from "~/components/ui/button"
 import { Card } from "~/components/ui/card"
 
 export function App() {

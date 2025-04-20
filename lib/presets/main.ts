@@ -1,5 +1,5 @@
-import type { Preset } from "./types"
 import { shadcnuiFiles } from "../../system/lib/files/shadcnui-files"
+import type { Preset } from "./types"
 
 export const mainPreset: Preset = {
   id: "main",
@@ -7,7 +7,7 @@ export const mainPreset: Preset = {
   description: "shadcn/uiを使用したフル機能の基本テンプレート",
   files: {
     ...shadcnuiFiles,
-  }
+  },
 }
 
 mainPreset.files["package.json"] = JSON.stringify(
@@ -244,7 +244,8 @@ const container = document.getElementById("root")
 
 createRoot(container!).render(<App />)`
 
-mainPreset.files["src/app.tsx"] = `import { Button } from "~/components/ui/button"
+mainPreset.files["src/app.tsx"] =
+  `import { Button } from "~/components/ui/button"
 
 export function App() {
   return (
@@ -254,7 +255,8 @@ export function App() {
   )
 }`
 
-mainPreset.files["src/lib/utils.ts"] = `import { type ClassValue, clsx } from "clsx"
+mainPreset.files["src/lib/utils.ts"] =
+  `import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
@@ -281,7 +283,8 @@ export function useIsMobile() {
   return !!isMobile
 }`
 
-mainPreset.files["tailwind.config.js"] = `import type { Config } from "tailwindcss"
+mainPreset.files["tailwind.config.js"] =
+  `import type { Config } from "tailwindcss"
 import animate from "tailwindcss-animate"
 import { fontFamily } from "tailwindcss/defaultTheme"
 

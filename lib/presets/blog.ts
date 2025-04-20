@@ -4,9 +4,8 @@ export const blogPreset: Preset = {
   id: "blog",
   name: "ブログ",
   description: "記事投稿と表示のためのブログテンプレート",
-  files: {}
+  files: {},
 }
-
 
 blogPreset.files["package.json"] = JSON.stringify(
   {
@@ -78,7 +77,8 @@ blogPreset.files["package.json"] = JSON.stringify(
   2,
 )
 
-blogPreset.files["src/app.tsx"] = `import { Button } from "~/components/ui/button"
+blogPreset.files["src/app.tsx"] =
+  `import { Button } from "~/components/ui/button"
 import { Card } from "~/components/ui/card"
 import { Separator } from "~/components/ui/separator"
 

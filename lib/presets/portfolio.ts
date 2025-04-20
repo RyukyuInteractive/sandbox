@@ -3,10 +3,10 @@ import type { Preset } from "./types"
 export const portfolioPreset: Preset = {
   id: "portfolio",
   name: "ポートフォリオ",
-  description: "あなたのプロジェクトや作品を紹介するためのポートフォリオテンプレート",
-  files: {}
+  description:
+    "あなたのプロジェクトや作品を紹介するためのポートフォリオテンプレート",
+  files: {},
 }
-
 
 portfolioPreset.files["package.json"] = JSON.stringify(
   {
@@ -78,7 +78,8 @@ portfolioPreset.files["package.json"] = JSON.stringify(
   2,
 )
 
-portfolioPreset.files["src/app.tsx"] = `import { Button } from "~/components/ui/button"
+portfolioPreset.files["src/app.tsx"] =
+  `import { Button } from "~/components/ui/button"
 import { Card } from "~/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
 

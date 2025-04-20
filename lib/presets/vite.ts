@@ -4,7 +4,7 @@ export const vitePreset: Preset = {
   id: "vite",
   name: "Vite + React",
   description: "シンプルなVite + Reactテンプレート",
-  files: {}
+  files: {},
 }
 
 vitePreset.files["package.json"] = JSON.stringify(

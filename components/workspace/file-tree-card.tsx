@@ -12,7 +12,12 @@ type Props = {
 
 export function FileTreeCard(props: Props) {
   return (
-    <Card className={cn("w-full flex-1 overflow-hidden rounded-xl border-zinc-800 bg-black/20", props.className)}>
+    <Card
+      className={cn(
+        "w-full flex-1 overflow-hidden rounded-xl border-zinc-800 bg-black/20",
+        props.className,
+      )}
+    >
       <div className="h-full overflow-y-auto p-4 text-zinc-300">
         <FileTreeItem
           preSaveFile={toFileSystemTree(props.preSaveFiles)}

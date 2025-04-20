@@ -1,7 +1,7 @@
 import { useChat } from "@ai-sdk/react"
+import type { WebContainerProcess } from "@webcontainer/api"
 import { createContext, useContext, useRef } from "react"
 import type { ReactNode } from "react"
-import type { WebContainerProcess } from "@webcontainer/api"
 import { useCredentialStorage } from "~/hooks/use-credential-storage"
 import { useProject } from "~/hooks/use-project"
 import { useShell } from "~/hooks/use-shell"
@@ -152,9 +152,5 @@ export function AIProvider({ children, projectId, prompt }: AIProviderProps) {
     },
   })
 
-  return (
-    <AIContext.Provider value={chat}>
-      {children}
-    </AIContext.Provider>
-  )
+  return <AIContext.Provider value={chat}>{children}</AIContext.Provider>
 }

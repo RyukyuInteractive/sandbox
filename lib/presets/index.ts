@@ -6,11 +6,11 @@ import type { Preset, PresetID } from "./types"
 import { vitePreset } from "./vite"
 
 export const presets: Record<PresetID, Preset> = {
-  "main": mainPreset,
-  "vite": vitePreset,
+  main: mainPreset,
+  vite: vitePreset,
   "landing-page": landingPagePreset,
-  "blog": blogPreset,
-  "portfolio": portfolioPreset,
+  blog: blogPreset,
+  portfolio: portfolioPreset,
 }
 
-export { type Preset, type PresetID } from "./types"
+export type { Preset, PresetID } from "./types"

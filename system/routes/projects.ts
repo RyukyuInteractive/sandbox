@@ -33,7 +33,7 @@ export const GET = factory.createHandlers(async (c) => {
 export const POST = factory.createHandlers(async (c) => {
   const body = await c.req.json()
   const presetId = (body.presetId as PresetID) || "main"
-  
+
   const project = {
     id: generateId(),
     messages: [],
