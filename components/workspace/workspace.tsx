@@ -1,4 +1,3 @@
-import { useChat } from "@ai-sdk/react"
 import type { WebContainerProcess } from "@webcontainer/api"
 import { Terminal as XTerm } from "@xterm/xterm"
 import type { ITerminalInitOnlyOptions, ITerminalOptions } from "@xterm/xterm"
@@ -6,6 +5,7 @@ import { Code, Download, Home, Send, Terminal } from "lucide-react"
 import type { editor } from "monaco-editor-core"
 import * as monaco from "monaco-editor-core"
 import { useEffect, useRef, useState } from "react"
+import { AIProvider, useAI } from "~/components/ai/ai-provider"
 import { Button } from "~/components/ui/button"
 import { Card } from "~/components/ui/card"
 import { Input } from "~/components/ui/input"
@@ -29,6 +29,7 @@ import { readFileTool } from "~/lib/tools/read-file-tool"
 import { searchFilesTool } from "~/lib/tools/search-files-tool"
 import { writeFileTool } from "~/lib/tools/write-file-tool"
 import { cn } from "~/lib/utils"
+import { useChat } from "@ai-sdk/react"
 
 type Props = {
   projectId: string
@@ -49,138 +50,68 @@ export function Workspace(props: Props) {
   })
 
   const project = useProject(props.projectId)
-
-  const [credentialStorage] = useCredentialStorage()
-
   const [currentFilePath, setCurrentFilePath] = useState<string>("src/app.tsx")
-
   const iframeRef = useRef<HTMLIFrameElement>(null)
-
   const webContainer = useWebContainer()
-
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
-
   const terminalRef = useRef<XTerm>(null)
-
   const shell = useShell()
-
   const terminalComponentRef = useRef<HTMLDivElement>(null)
-
   const view = useViews()
 
-  const chat = useChat({
-    id: project.data.id,
-    maxSteps: 128,
-    initialInput: props.prompt,
-    initialMessages: project.data.messages,
-    sendExtraMessageFields: true,
-    async fetch(_, init) {
-      if (typeof init?.body !== "string") throw new Error("init is undefined")
-      return client.index.$post({ json: JSON.parse(init.body) })
-    },
-    experimental_prepareRequestBody(options) {
-      return {
-        ...options,
-        apiKey: credentialStorage.readApiKey(),
-        template: "",
-        files: project.data.files,
-      }
-    },
-    generateId() {
-      return crypto.randomUUID()
-    },
-    async onToolCall(toolInvocation) {
-      stateRef.current.isLocked = true
+  return (
+    <AIProvider projectId={props.projectId} prompt={props.prompt}>
+      <WorkspaceContent
+        stateRef={stateRef}
+        project={project}
+        currentFilePath={currentFilePath}
+        setCurrentFilePath={setCurrentFilePath}
+        iframeRef={iframeRef}
+        webContainer={webContainer}
+        editorRef={editorRef}
+        terminalRef={terminalRef}
+        shell={shell}
+        terminalComponentRef={terminalComponentRef}
+        view={view}
+      />
+    </AIProvider>
+  )
+}
 
-      if (toolInvocation.toolCall.toolName === "read_file") {
-        const tool = readFileTool()
-        const args = tool.parameters.parse(toolInvocation.toolCall.args)
-        const filePath = args.path.replace("~", "src")
-        const content = project.data.files[filePath] || null
-        return {
-          toolCallId: toolInvocation.toolCall.toolCallId,
-          result: {
-            content: content,
-            error: content
-              ? `ファイル ${filePath} の内容を読み込みました`
-              : "ファイル読み込みエラー",
-          },
-        }
-      }
+type WorkspaceContentProps = {
+  stateRef: React.MutableRefObject<{
+    currentFilePath: string
+    isLocked: boolean
+    devProcess: WebContainerProcess | null
+    isBusy: boolean
+  }>
+  project: ReturnType<typeof useProject>
+  currentFilePath: string
+  setCurrentFilePath: React.Dispatch<React.SetStateAction<string>>
+  iframeRef: React.RefObject<HTMLIFrameElement | null>
+  webContainer: ReturnType<typeof useWebContainer>
+  editorRef: React.RefObject<editor.IStandaloneCodeEditor | null>
+  terminalRef: React.MutableRefObject<XTerm | null>
+  shell: ReturnType<typeof useShell>
+  terminalComponentRef: React.RefObject<HTMLDivElement | null>
+  view: ReturnType<typeof useViews>
+}
 
-      if (toolInvocation.toolCall.toolName === "list_files") {
-        // const tool = listFilesTool()
-        // const args = tool.parameters.parse(toolInvocation.toolCall.args)
-        const files = Object.keys(project.data.files)
-        return {
-          toolCallId: toolInvocation.toolCall.toolCallId,
-          result: { files: files },
-        }
-      }
-
-      if (toolInvocation.toolCall.toolName === "search_files") {
-        const tool = searchFilesTool()
-        const args = tool.parameters.parse(toolInvocation.toolCall.args)
-        const regex = args.regex
-        const files = Object.keys(project.data.files).filter((file) => {
-          return project.data.files[file].match(new RegExp(regex))
-        })
-        return {
-          toolCallId: toolInvocation.toolCall.toolCallId,
-          result: { files: files },
-        }
-      }
-
-      if (toolInvocation.toolCall.toolName === "write_to_file") {
-        const tool = writeFileTool()
-        const args = tool.parameters.parse(toolInvocation.toolCall.args)
-        const filePath = args.path.replace("~", "src")
-        const code = args.content
-        if (editorRef.current === null) {
-          throw new Error("editorRef is null")
-        }
-        if (currentFilePath !== args.path) {
-          stateRef.current.currentFilePath = args.path
-          setCurrentFilePath(args.path)
-        }
-        view.push("EDITOR")
-        const dir = filePath.split("/").slice(0, -1).join("/")
-        await webContainer.fs.mkdir(dir, { recursive: true })
-        await webContainer.fs.writeFile(filePath, code)
-        return {
-          toolCallId: toolInvocation.toolCall.toolCallId,
-          result: {
-            message: `ファイル ${filePath} に書き込みました`,
-          },
-        }
-      }
-
-      if (toolInvocation.toolCall.toolName === "execute_command") {
-        const tool = executeCommandTool()
-        const args = tool.parameters.parse(toolInvocation.toolCall.args)
-        const command = args.command
-        await shell.exit()
-        await shell.exec(command)
-        return {
-          toolCallId: toolInvocation.toolCall.toolCallId,
-          result: { ok: true },
-        }
-      }
-    },
-    async onFinish(message) {
-      console.log("onFinish", message)
-      // view.remove("EDITOR")
-      // view.remove("TERMINAL")
-      stateRef.current.isLocked = false
-    },
-    onError(error) {
-      console.error("Error in chat stream:", error)
-      view.remove("EDITOR")
-      view.remove("TERMINAL")
-      stateRef.current.isLocked = false
-    },
-  })
-
+function WorkspaceContent({
+  stateRef,
+  project,
+  currentFilePath,
+  setCurrentFilePath,
+  iframeRef,
+  webContainer,
+  editorRef,
+  terminalRef,
+  shell,
+  terminalComponentRef,
+  view,
+}: WorkspaceContentProps) {
+  const chat = useAI()
+  
   useEffect(() => {
     runDevContainer()
 
@@ -337,8 +268,9 @@ export function Workspace(props: Props) {
 
   return (
     <div className="flex h-svh w-full bg-zinc-900">
-      <aside className="flex h-full w-96 min-w-96 flex-col gap-2 p-2">
-        <Card className="h-1/2 w-full overflow-hidden rounded-xl border-zinc-800 bg-black">
+      {/* チャット部分（左側） */}
+      <div className="w-1/3 border-r border-zinc-800 p-2">
+        <Card className="h-full w-full overflow-hidden rounded-xl border-zinc-800 bg-black">
           <div className="scrollbar-thin scrollbar-track-zinc-900 scrollbar-thumb-zinc-700 flex h-full flex-col overflow-hidden">
             <ul
               className="flex-1 space-y-2 overflow-y-auto p-2 text-zinc-300"
@@ -375,13 +307,10 @@ export function Workspace(props: Props) {
             </form>
           </div>
         </Card>
-        <FileTreeCard
-          preSaveFiles={project.preSaveData.files}
-          files={project.data.files}
-          onSelectFile={onSelectFile}
-        />
-      </aside>
-      <main className="flex flex-1 flex-col gap-2 p-2">
+      </div>
+
+      {/* エディタ部分（右側） */}
+      <main className="flex w-2/3 flex-col gap-2 p-2">
         <div className="flex gap-2">
           <Button
             size="icon"
@@ -406,6 +335,32 @@ export function Workspace(props: Props) {
             onClick={view.toggle("TERMINAL")}
           >
             <Terminal className="h-4 w-4" />
+          </Button>
+          <Button
+            size="icon"
+            variant="ghost"
+            className={cn(
+              "h-8 w-8 text-zinc-400 hover:text-zinc-300",
+              view.state.includes("SIDEBAR") &&
+                "bg-emerald-500/10 text-emerald-400 hover:text-emerald-300",
+            )}
+            onClick={view.toggle("SIDEBAR")}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-4 w-4"
+            >
+              <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+              <line x1="9" x2="9" y1="3" y2="21" />
+            </svg>
           </Button>
           <div className="flex-1" />
           <Button
@@ -436,6 +391,7 @@ export function Workspace(props: Props) {
               />
             </Card>
           </div>
+          {/* エディタ、ターミナル、サイドバーをプレビューの上に重ねる */}
           <div
             className={cn("absolute inset-0", {
               hidden: !view.state.includes("EDITOR"),
@@ -458,15 +414,57 @@ export function Workspace(props: Props) {
             </Card>
           </div>
           <div
-            className={cn("absolute right-0 bottom-0 w-full p-2 opacity-90", {
+            className={cn("absolute right-0 bottom-0 w-2/3 h-1/3 p-2", {
               hidden: !view.state.includes("TERMINAL"),
             })}
           >
-            <Card className="overflow-hidden border-zinc-800 bg-black p-4">
+            <Card className="h-full w-full overflow-hidden border-zinc-800 bg-black p-4">
               <div
                 className="h-full w-full overflow-x-hidden"
                 ref={terminalComponentRef}
               />
+            </Card>
+          </div>
+          <div
+            className={cn("absolute right-0 top-0 h-2/3 w-64 p-2", {
+              hidden: !view.state.includes("SIDEBAR"),
+            })}
+          >
+            <Card className="h-full w-full overflow-hidden rounded-xl border-zinc-800 bg-black">
+              <div className="flex flex-col h-full">
+                <div className="p-2 border-b border-zinc-800">
+                  <LinkButton
+                    to="/"
+                    variant="ghost"
+                    className="w-full justify-start gap-2 text-zinc-300 hover:text-white"
+                  >
+                    <Home className="h-4 w-4" />
+                    <span>ホームに戻る</span>
+                  </LinkButton>
+                </div>
+                <div className="flex-1 overflow-auto">
+                  <FileTreeCard
+                    className="border-none"
+                    preSaveFiles={project.preSaveData.files}
+                    files={project.data.files}
+                    onSelectFile={onSelectFile}
+                  />
+                </div>
+                <div className="p-2 border-t border-zinc-800">
+                  <h3 className="mb-2 text-sm font-semibold text-zinc-400">設定</h3>
+                  <div className="space-y-1">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-sm text-zinc-300 hover:text-white"
+                      onClick={() => {
+                        console.log("全般設定")
+                      }}
+                    >
+                      <span>全般</span>
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </Card>
           </div>
         </div>

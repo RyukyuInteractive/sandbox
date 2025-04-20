@@ -1,9 +1,9 @@
 import { useState } from "react"
 
-type Value = "EDITOR" | "TERMINAL"
+type Value = "EDITOR" | "TERMINAL" | "SIDEBAR"
 
 export function useViews() {
-  const [state, setState] = useState<Value[]>(["TERMINAL"])
+  const [state, setState] = useState<Value[]>(["TERMINAL", "SIDEBAR"])
 
   const toggle = (component: Value) => () => {
     setState((currentComponents) => {

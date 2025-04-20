@@ -17,7 +17,16 @@ import { Button } from "~/components/ui/button"
 import { Card } from "~/components/ui/card"
 import { Input } from "~/components/ui/input"
 import { LinkButton } from "~/components/ui/link-button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select"
 import { client } from "~/lib/client"
+import { presets } from "~/lib/presets"
+import type { PresetID } from "~/lib/presets"
 import type { Project } from "~/types/workspace"
 
 export const Route = createFileRoute("/")({
@@ -39,14 +48,17 @@ function RouteComponent() {
 
   const createProject = useMutation({
     mutationKey: ["projects"],
-    mutationFn: async () => {
-      const res = await client.projects.$post()
+    mutationFn: async (presetId: PresetID) => {
+      const res = await client.projects.$post({
+        json: { presetId },
+      })
       const json = await res.json()
       return json
     },
   })
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [selectedPreset, setSelectedPreset] = useState<PresetID>("main")
 
   const mainRef = useRef<HTMLDivElement>(null)
 
@@ -57,7 +69,7 @@ function RouteComponent() {
 
     const prompt = formData.get("prompt")
 
-    const project = await createProject.mutateAsync()
+    const project = await createProject.mutateAsync(selectedPreset)
 
     navigate({
       to: "/$project",
@@ -74,46 +86,47 @@ function RouteComponent() {
       <aside
         className={`fixed top-0 left-0 z-40 h-screen w-72 transform border-zinc-800 border-r bg-black backdrop-blur-sm transition-transform duration-300 ease-in-out ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} overflow-y-auto`}
       >
-        <div className="sticky top-0 space-y-2 border-zinc-800 border-b bg-black p-2 pt-16 backdrop-blur-sm">
-          <Button
-            type="submit"
-            form="new-room"
-            className="w-full gap-2 bg-emerald-600 text-white hover:bg-emerald-700"
-          >
-            <PlusCircle className="h-5 w-5" />
-            <span>チャットを新規作成</span>
-          </Button>
-
-          <LinkButton
-            to="/settings"
-            variant="ghost"
-            className="w-full justify-center gap-2 text-zinc-300 hover:bg-zinc-800/50 hover:text-white"
-          >
-            <Shield className="h-5 w-5" />
-            <span>APIキーの設定</span>
-          </LinkButton>
+        {/* タイトル */}
+        <div className="sticky top-0 border-zinc-800 border-b bg-black p-4 pt-16 backdrop-blur-sm">
+          <h1 className="text-xl font-bold text-white">Sandbox</h1>
         </div>
 
-        <nav className="space-y-4 p-2">
-          <div className="flex items-center gap-2 px-2 text-sm text-zinc-400">
-            <Clock className="h-4 w-4" />
-            <span>最近のチャット</span>
-          </div>
-          <div className="space-y-1">
-            {result.data.map((item) => (
-              <LinkButton
-                to="/$project"
-                params={{ project: item.id }}
-                key={item.id}
-                variant="ghost"
-                className="w-full justify-start overflow-hidden text-sm text-zinc-300 hover:text-white"
+        <nav className="flex flex-col h-[calc(100vh-80px)]">
+          {/* プロジェクト */}
+          <div className="p-4">
+            <h2 className="mb-2 text-sm font-semibold text-zinc-400">プロジェクト</h2>
+            <div className="space-y-1">
+              <Button
+                type="submit"
+                form="new-room"
+                className="w-full gap-2 bg-emerald-600 text-white hover:bg-emerald-700"
               >
-                <span className="block w-full truncate text-left">
-                  {item.messages.find(({ role }) => role === "user")?.content ??
-                    "新しいチャット"}
-                </span>
-              </LinkButton>
-            ))}
+                <PlusCircle className="h-4 w-4" />
+                <span>新しいプロジェクト</span>
+              </Button>
+              
+              <div className="mt-2 space-y-1">
+                {result.data.map((item) => (
+                  <LinkButton
+                    to="/$project"
+                    params={{ project: item.id }}
+                    key={item.id}
+                    variant="ghost"
+                    className="w-full justify-start overflow-hidden text-sm text-zinc-300 hover:text-white"
+                  >
+                    <span className="block w-full truncate text-left">
+                      {item.messages.find(({ role }) => role === "user")?.content ??
+                        "新しいプロジェクト"}
+                      {item.presetId && (
+                        <span className="ml-1 text-xs text-emerald-400">
+                          [{presets[item.presetId as PresetID]?.name || item.presetId}]
+                        </span>
+                      )}
+                    </span>
+                  </LinkButton>
+                ))}
+              </div>
+            </div>
           </div>
         </nav>
       </aside>
@@ -162,6 +175,26 @@ function RouteComponent() {
                       placeholder="Webサイトの要件を入力してください..."
                       name="prompt"
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-sm text-zinc-400">
+                      プリセットを選択
+                    </label>
+                    <Select
+                      value={selectedPreset}
+                      onValueChange={(value) => setSelectedPreset(value as PresetID)}
+                    >
+                      <SelectTrigger className="border-zinc-800 bg-zinc-900/80 text-white">
+                        <SelectValue placeholder="プリセットを選択" />
+                      </SelectTrigger>
+                      <SelectContent className="border-zinc-800 bg-zinc-900 text-white">
+                        {Object.values(presets).map((preset) => (
+                          <SelectItem key={preset.id} value={preset.id}>
+                            {preset.name} - {preset.description}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <Button
                     type="submit"

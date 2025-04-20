@@ -14,6 +14,7 @@ import { Route as rootRoute } from './../routes/__root'
 import { Route as SettingsImport } from './../routes/settings'
 import { Route as ProjectImport } from './../routes/$project'
 import { Route as IndexImport } from './../routes/index'
+import { Route as ProjectEditorImport } from './../routes/$project.editor'
 
 // Create/Update Routes
 
@@ -33,6 +34,12 @@ const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRoute,
+} as any)
+
+const ProjectEditorRoute = ProjectEditorImport.update({
+  id: '/editor',
+  path: '/editor',
+  getParentRoute: () => ProjectRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -60,48 +67,69 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsImport
       parentRoute: typeof rootRoute
     }
+    '/$project/editor': {
+      id: '/$project/editor'
+      path: '/editor'
+      fullPath: '/$project/editor'
+      preLoaderRoute: typeof ProjectEditorImport
+      parentRoute: typeof ProjectImport
+    }
   }
 }
 
 // Create and export the route tree
 
+interface ProjectRouteChildren {
+  ProjectEditorRoute: typeof ProjectEditorRoute
+}
+
+const ProjectRouteChildren: ProjectRouteChildren = {
+  ProjectEditorRoute: ProjectEditorRoute,
+}
+
+const ProjectRouteWithChildren =
+  ProjectRoute._addFileChildren(ProjectRouteChildren)
+
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/$project': typeof ProjectRoute
+  '/$project': typeof ProjectRouteWithChildren
   '/settings': typeof SettingsRoute
+  '/$project/editor': typeof ProjectEditorRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/$project': typeof ProjectRoute
+  '/$project': typeof ProjectRouteWithChildren
   '/settings': typeof SettingsRoute
+  '/$project/editor': typeof ProjectEditorRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
-  '/$project': typeof ProjectRoute
+  '/$project': typeof ProjectRouteWithChildren
   '/settings': typeof SettingsRoute
+  '/$project/editor': typeof ProjectEditorRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$project' | '/settings'
+  fullPaths: '/' | '/$project' | '/settings' | '/$project/editor'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$project' | '/settings'
-  id: '__root__' | '/' | '/$project' | '/settings'
+  to: '/' | '/$project' | '/settings' | '/$project/editor'
+  id: '__root__' | '/' | '/$project' | '/settings' | '/$project/editor'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ProjectRoute: typeof ProjectRoute
+  ProjectRoute: typeof ProjectRouteWithChildren
   SettingsRoute: typeof SettingsRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ProjectRoute: ProjectRoute,
+  ProjectRoute: ProjectRouteWithChildren,
   SettingsRoute: SettingsRoute,
 }
 
@@ -124,10 +152,17 @@ export const routeTree = rootRoute
       "filePath": "index.tsx"
     },
     "/$project": {
-      "filePath": "$project.tsx"
+      "filePath": "$project.tsx",
+      "children": [
+        "/$project/editor"
+      ]
     },
     "/settings": {
       "filePath": "settings.tsx"
+    },
+    "/$project/editor": {
+      "filePath": "$project.editor.tsx",
+      "parent": "/$project"
     }
   }
 }
