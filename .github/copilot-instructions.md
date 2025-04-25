@@ -53,9 +53,8 @@ Your memory resets between sessions. You rely on these files:
 以下はファイルの例です。
 
 - `.docs/entities/*.md` - Entityの定義
-- `.docs/values/*.md` - 値オブジェクトの概要
-- `.docs/terms/term1.md` - 個別の用語定義（1用語1ファイル）
-- `.docs/use-cases/*.md` - システムの個別ユースケースの定義
+- `.docs/values/*.md` - 値オブジェクトの定義
+- `.docs/terms/*.md` - 個別の用語定義（1用語1ファイル）
 - `.docs/features/*.md` - 機能要件の定義
 - `.docs/pages/*.md` - ページの要件定義
 
