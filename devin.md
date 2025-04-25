@@ -41,17 +41,40 @@ Confirm with user only when:
 
 Your memory resets between sessions. You rely on these files:
 
-- `.docs/overview.md` - プロジェクト/製品の概要と目的を記述
-- `.docs/terms/README.md` - 用語集の概要説明とナビゲーション
+- `.docs/overview.md` - プロジェクトの概要と目的を記述
+- `.docs/**/*/README.md` - そのディレクトリを説明するAI向けの概要
+- `.docs/**/*.md` - 仕様など
+
+- `.docs/terms/*.md` - 個別の用語定義（1用語1ファイル）
+- `.docs/notes/*.md` - システムに取り込めない補足事項
+
+- `.updates/YYYY-MM-DD.md` - 更新履歴
+
+以下はファイルの例です。
+
+- `.docs/entities/*.md` - Entityの定義
+- `.docs/values/*.md` - 値オブジェクトの概要
 - `.docs/terms/term1.md` - 個別の用語定義（1用語1ファイル）
-- `.docs/terms/term2.md` - 個別の用語定義（1用語1ファイル）
-- `.docs/models/README.md` - ドメインモデルの概要とナビゲーション
-- `.docs/models/model1.md` - 個別ドメインモデルの定義
-- `.docs/models/model2.md` - 個別ドメインモデルの定義
-- `.docs/use-cases/README.md` - ユースケースの概要とナビゲーション
-- `.docs/use-cases/use-case1.md` - 個別ユースケースの定義
-- `.docs/use-cases/use-case2.md` - 個別ユースケースの定義
-- `.docs/notes/note1.md` - システムに取り込めない補足事項
+- `.docs/use-cases/*.md` - システムの個別ユースケースの定義
+- `.docs/features/*.md` - 機能要件の定義
+- `.docs/pages/*.md` - ページの要件定義
+
+### updates/YYYY-MM-DD.md
+
+ディレクトリ「docs」のファイルを更新した場合にその内容を簡潔に記録します。
+
+- ファイル名はYYYY-MM-DDの形式にする
+- 変更のあったファイルの名前の一覧は不要
+
+### */README.md
+
+そのディレクトリの概要を記述。全てのディレクトリにREADMEが必要です。
+
+最初の見出しはdocsを除くパスを記述してください。
+
+```
+# products/products/sheet/values/README.md
+```
 
 ### 概要ファイル (overview.md)
 
@@ -111,14 +134,46 @@ Your memory resets between sessions. You rely on these files:
 [必要に応じた補足情報]
 ```
 
-### モデル定義ファイル (models/*.md)
+### Entityの定義ファイル (entities/*-entity.md)
 
-ドメインモデル（エンティティ、値オブジェクト、集約など）を定義。
+Entity（or 集約）を定義。
 
-- モデルの種類（エンティティ、値オブジェクト、集約）を明示する
-- 属性には型情報と制約を含める
+- 属性には制約を含める
 - ビジネスルールは明確かつ検証可能な形で記述する
-- 他のモデルとの関係性を明示する
+- 他の値オブジェクトやEntityを使用する
+- テーブルを使用しない
+
+```
+# [モデル名]
+
+[モデルの役割と目的の説明]
+
+## 属性
+
+### [属性名A]
+
+[属性の役割と目的の説明]
+
+- ビジネスルール
+
+### [属性名B]
+
+## ビジネスルール
+
+その他のビジネスルールをここに記述してください。
+
+- [ルール1]
+- [ルール2]
+```
+
+必要に応じてユーザに提案と共に質問して詳細を引き出してください。
+
+### 値オブジェクトの定義ファイル (values/*-value.md)
+
+値オブジェクトを定義。
+
+- 属性には制約を含める
+- ビジネスルールは明確かつ検証可能な形で記述する
 - テーブルを使用しない
 
 ```
@@ -138,36 +193,60 @@ Your memory resets between sessions. You rely on these files:
 - [ルール2]
 ```
 
-### ユースケース定義ファイル (use-cases/*.md)
+### 機能要件定義ファイル (features/*.md)
 
-システムの利用シナリオと動作を記述。
+機能の利用シナリオと動作を記述。
 
 - フローは明確な番号付きステップで記述する
 - 代替フローは条件ごとに分けて記述する
 - 使用するドメインモデルへの参照を含める
-- エッジケースや例外も考慮する
+- createやdelete,updateなどは別々で定義する
 
 ```
-# [ユースケース名]
+# [機能名（XXXがXXXする）]
 
-[ユースケースの目的と概要を1-2文で]
+[機能の目的と概要を1-2文で]
 
 1. [主語]が[アクション]する
 2. [主語]が[アクション]する
-    If ([条件]) Then
-      [条件成立時の処理]
-    Else
-      [条件不成立時の処理]
-    EndIf
 3. [次のステップ]
 ```
 
-必要に応じて、以下の質問を使ってユースケースの詳細を引き出してください:
+### ファイル名
 
-1. このユースケースの目的は何ですか？
-2. 通常のシナリオでは具体的にどのような流れになりますか？
-3. どのような条件分岐が考えられますか？
-4. 複雑な例外処理が必要なケースはありますか？
+以下の命名規則に従う。
+
+- view-* - 詳細を確認
+- list-* - 一覧
+- create-* - 作成
+- delete-* - 削除
+- add-* - 配列に追加
+- remove-* - 配列から削除
+- update-* - 更新
+
+その他「search」「import」「archive」など必要に応じて使用します。
+
+### ページ要件定義ファイル (pages/*.md)
+
+ページの要件を定義。
+
+```
+# [ページ名]
+
+[ページの目的と概要を1-2文で]
+
+## 要件
+
+- [要件1]
+
+## UI/UX
+
+UI/UXに関するメモ。
+
+## 補足
+
+- [補足1]
+```
 
 # 10.output.md
 
@@ -241,6 +320,8 @@ Your memory resets between sessions. You rely on these files:
 
 # 20.architecture.md
 
+## サブディレクトリを含まないトップレベルディレクトリ
+
 - `components/`
 - `hooks/` - ReactのHooks
 - `lib/` - 小さなユーティリティ関数
@@ -277,26 +358,11 @@ Your memory resets between sessions. You rely on these files:
 
 # 21.development.md
 
-## コマンド
+## Commands
 
 - `bun test` - テストを実行する
 - `bun run format` - コードを整形する
 - `bun run build` - 仕様書を更新する
-
-## ライブラリ
-
-- React (v19)
-- TypeScript
-- Vite
-- Bun (JavaScriptランタイム)
-- Tailwind CSS
-- WebContainer API
-- Monaco Editor
-- xterm.js (ターミナルエミュレータ)
-- AI SDK (@ai-sdk/anthropic, @ai-sdk/openai など)
-- Hono (軽量Webフレームワーク)
-- TanStack Router/Query
-- GraphQL (Apollo Client/Server)
 
 # 22.restriction.md
 
