@@ -7,8 +7,8 @@
     "build": "bun --bun vite build",
     "deploy": "wrangler deploy",
     "check": "tsc --noEmit",
-    "init": "bun run .instructions/build.ts",
-    "predev": "bun run .instructions/build.ts"
+    "init": "bun run init.ts",
+    "predev": "bun run init.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.1.15",
